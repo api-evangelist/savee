@@ -1,0 +1,56 @@
+name: Savee
+description: >-
+  Curated visual-inspiration platform for designers, exposing a read-only REST API, a hosted MCP server, an llms.txt,
+  and a published agent skill. All access requires an active Savee subscription.
+url: https://raw.githubusercontent.com/api-evangelist/savee/refs/heads/main/apis.yml
+created: '2026-08-25'
+modified: '2026-08-25'
+specificationVersion: '0.21'
+tags:
+  - design
+  - photography
+  - visual inspiration
+  - creative reference
+  - OAuth
+  - REST
+  - MCP
+  - agent-native
+  - AI-assistant integration
+apis:
+  - name: Savee Public API
+    description: >-
+      Read-only REST API for accessing saves, boards, home feed, search, and user/plan data. OpenAPI 3.1 contract
+      published live. Auth via Bearer personal access tokens or scoped OAuth 2.1 tokens.
+    humanURL: https://docs.savee.com/api/quickstart
+    baseURL: https://api.savee.com/v1
+    tags:
+      - design
+      - photography
+      - visual inspiration
+      - creative reference
+      - OAuth
+      - REST
+      - MCP
+      - agent-native
+      - AI-assistant integration
+    properties:
+      - type: OpenAPI
+        url: https://api.savee.com/v1/openapi.json
+      - type: Documentation
+        url: https://docs.savee.com/api/quickstart
+      - type: LLMsTxt
+        url: https://docs.savee.com/llms.txt
+      - type: AgentSkill
+        url: https://github.com/saveeit/skills
+      - type: MCPServer
+        url: https://mcp.savee.com/mcp
+      - type: Documentation
+        url: https://docs.savee.com/mcp
+maintainers:
+  - FN: Savee
+    url: https://savee.com
+generated:
+  by: apis.io/add
+  model: claude-opus-4-8
+  confidence: 97
+  at: '2026-08-25T20:50:02.550Z'
