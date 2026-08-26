@@ -1,0 +1,57 @@
+# Savee Developer Documentation
+
+> Savee (savee.com) is a curated visual-inspiration platform for designers.
+> This site documents the two ways to build on it: an official MCP server for
+> AI assistants, and a read-only public REST API. The MCP server authenticates
+> with OAuth 2.1; the REST API accepts either a personal access token or an
+> OAuth 2.1 access token. Both require an active Savee subscription, and neither
+> can write — nothing in either surface can save, edit, move, or delete anything
+> in a member's account.
+
+## MCP server
+
+For connecting an AI assistant (Claude, ChatGPT, Cursor, or any MCP client) to a
+member's Savee account. Server URL: https://mcp.savee.com/mcp
+
+- Overview: https://docs.savee.com/mcp — what it is and the seven read-only tools
+- Install: https://docs.savee.com/mcp/install — per-client setup steps
+- Permissions & access: https://docs.savee.com/mcp/permissions — what each scope grants, and search limits
+- For developers: https://docs.savee.com/mcp/developers — protocol details, transport, and OAuth discovery
+
+## REST API
+
+Base URL: https://api.savee.com/v1/ — every endpoint is a GET.
+
+- Quickstart: https://docs.savee.com/api/quickstart — first request, pagination, image formats
+- Authentication: https://docs.savee.com/api/authentication — personal access tokens
+- OAuth for apps: https://docs.savee.com/api/oauth — let your users sign in with Savee
+- Errors: https://docs.savee.com/api/errors — error shape and status codes
+- Rate limits: https://docs.savee.com/api/rate-limits — general and search-specific quotas
+- Versioning: https://docs.savee.com/api/versioning — what can change and what can't
+- Agent skill: https://docs.savee.com/api/skill — a packaged skill for coding agents
+
+## Endpoint reference
+
+- Overview: https://docs.savee.com/api/reference — every endpoint and the scope it needs
+- System: https://docs.savee.com/api/reference/system — health check, OpenAPI document
+- User: https://docs.savee.com/api/reference/user — the authenticated member and their plan
+- Saves: https://docs.savee.com/api/reference/saves — a member's saves, home feed, and a board's saves
+- Boards: https://docs.savee.com/api/reference/boards — boards owned, collaborated on, or shared with a team
+- Search: https://docs.savee.com/api/reference/search — Savee's public library
+
+Machine-readable spec: https://api.savee.com/v1/openapi.json (OpenAPI 3.1)
+
+## Notes
+
+Authentication is either a personal access token (`sv_live_…`), for tools you
+build for yourself, or an OAuth 2.1 access token (`sv_at_…`) obtained on a
+member's behalf. OAuth tokens are scoped — `profile:read`, `saves:read`,
+`boards:read`, `search:read` — and a member can revoke an app at any time from
+their Savee settings.
+
+Search reads Savee's public library rather than the caller's own saves, and is
+metered far more tightly than everything else: 20 searches per 5 minutes and 200
+per week, per account. That ceiling is deliberate.
+
+Registering an OAuth app is invite-only while partner integrations are onboarded
+one at a time. Contact hey@savee.com to discuss an integration.

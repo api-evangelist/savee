@@ -1,0 +1,44 @@
+aid: savee
+name: Savee
+description: >-
+  Savee is a curated visual-inspiration platform for designers. Its public API exposes that
+  library programmatically — an OpenAPI 3.1 contract of 9 operations and 11 schemas served from
+  api.savee.com, authenticated with either a bearer token or OAuth 2.
+type: Index
+url: https://raw.githubusercontent.com/api-evangelist/savee/refs/heads/main/apis.yml
+created: '2026-08-26'
+modified: '2026-08-26'
+specificationVersion: '0.23'
+tags: [Design, Inspiration, Images, Content, Creative]
+tags_raw: [design, visual inspiration, images, creative]
+apis:
+- aid: savee:savee-public-api
+  name: Savee Public API
+  description: >-
+    Programmatic access to Savee's curated visual library. 9 operations, 11 schemas, bearer token
+    or OAuth 2.
+  humanURL: https://docs.savee.com
+  baseURL: https://api.savee.com/v1
+  tags: [Design, Images]
+  properties:
+  - {type: OpenAPI, url: openapi/savee-public-api-openapi.yml}
+  - {type: APIReference, url: 'https://api.savee.com/v1/openapi.json'}
+  - {type: Documentation, url: 'https://docs.savee.com'}
+common:
+- {type: LLMsTxt, url: llms/savee-llms.txt}
+- {type: Website, url: 'https://savee.com'}
+- {type: DeveloperPortal, url: 'https://docs.savee.com'}
+maintainers:
+- {FN: Savee, email: hey@savee.com, url: 'https://savee.com'}
+x-provenance:
+  added: '2026-08-26'
+  method: searched
+  source: https://docs.savee.com/llms.txt
+  note: >-
+    Submitted via apis.io/add on 2026-08-26 and auto-published by the gate at rating 23. The
+    submitted APIs.json URL does not exist — docs.savee.com/apis.json and
+    /.well-known/apis.json both return real 404s against a control that also 404s.
+    The specification was found by reading the provider's own llms.txt, which names it at
+    https://api.savee.com/v1/openapi.json — a different host from the one submitted. Fetched and
+    verified: OpenAPI 3.1, 9 paths, 11 schemas, BearerAuth and OAuth2. The low gate rating
+    reflects the missing apis.json, not the API.
