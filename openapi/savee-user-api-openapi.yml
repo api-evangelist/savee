@@ -1,0 +1,160 @@
+openapi: 3.2.0
+info:
+  title: Savee Public User API
+  version: 1.0.0
+  contact:
+    name: Savee
+    url: https://docs.savee.com
+    email: hey@savee.com
+  termsOfService: https://savee.com/terms/
+  license:
+    name: Proprietary — Savee Terms of Service
+    url: https://savee.com/terms/
+  description: 'Read-only REST API exposing a Savee user’s own saves, boards, and home feed, plus search over Savee’s public library.
+
+
+    Authenticate with either a personal access token (`sv_live_…`) generated in your Savee settings, or an OAuth 2.1 access token (`sv_at_…`) obtained on one of your users’ behalf. OAuth tokens are limited to the scopes the user approved; personal tokens carry all of them.
+
+
+    **Image format** — `media.thumbnail` and `media.original` for image saves are AVIF by default. Clients that cannot decode AVIF should send the request header `Avif-Fallback: 1` to receive JPG URLs instead. Video originals are always MP4.'
+servers:
+- url: https://api.savee.com
+tags:
+- name: User
+paths:
+  /v1/me:
+    get:
+      summary: Get the authenticated user
+      tags:
+      - User
+      security:
+      - BearerAuth: []
+      - OAuth2:
+        - profile:read
+      responses:
+        '200':
+          description: Authenticated user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+        '400':
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid Bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
+          description: Authenticated but the user has no active subscription.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: The Public API is not available on this account.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded. Retry after the number of seconds in `Retry-After`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Unexpected server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    Me:
+      type: object
+      properties:
+        id:
+          type: string
+          description: User identifier. Stable across renames.
+          example: 63e1a4c2d242ec00094007f1
+        username:
+          type: string
+          description: Current username. May change if the user renames.
+          example: aliceb
+        name:
+          type: string
+          example: Alice Bauer
+        url:
+          type: string
+          format: uri
+          example: https://savee.com/aliceb/
+        avatar_url:
+          type: string
+          format: uri
+          example: https://dm.savee.com/user-avatar/original/8kQ2mZp.jpg
+        plan:
+          type: object
+          properties:
+            active:
+              type: boolean
+              example: true
+            tiers:
+              type: array
+              items:
+                type: string
+              example:
+              - pro
+          required:
+          - active
+          - tiers
+          description: The caller’s subscription state. `active` must be true to use the API.
+      required:
+      - id
+      - username
+      - name
+      - url
+      - avatar_url
+      - plan
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+          required:
+          - code
+          - message
+      required:
+      - error
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: sv_live_…
+      description: '**Personal access token** (`sv_live_…`) — represents you and carries every scope, so no scope is required for this call. Best for your own scripts and internal tools. Generate one at https://savee.com/developers/.'
+    OAuth2:
+      type: oauth2
+      description: '**OAuth access token** (`sv_at_…`) — obtained on one of your users’ behalf and limited to the scopes they approved. Use this when you’re building a product other people sign into with Savee. See https://docs.savee.com/api/oauth.
+
+
+        Missing the scope below returns `403` with a `WWW-Authenticate: Bearer error="insufficient_scope"` header naming it.'
+      flows:
+        authorizationCode:
+          authorizationUrl: https://savee.com/oauth/authorize/
+          tokenUrl: https://savee.com/api/oauth/token/
+          refreshUrl: https://savee.com/api/oauth/token/
+          scopes:
+            profile:read: Read the user’s username, name, and avatar
+            saves:read: Read the user’s saves and home feed
+            boards:read: Read the user’s boards and the saves on them
+            search:read: Search Savee’s public library on the user’s behalf
