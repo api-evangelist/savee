@@ -20,8 +20,16 @@ deliveryModel:
 created: '2026-08-26'
 modified: '2026-08-26'
 specificationVersion: '0.23'
-tags: [Design, Inspiration, Images, Content, Creative]
-tags_raw: [design, visual inspiration, images, creative]
+tags:
+- Design
+- visual inspiration
+- Image
+- creative
+tags_raw:
+- design
+- visual inspiration
+- images
+- creative
 apis:
 - aid: savee:savee-boards-api
   name: Savee Boards API
