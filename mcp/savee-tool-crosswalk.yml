@@ -1,0 +1,86 @@
+generated: '2026-09-03'
+method: derived
+source: https://docs.savee.com/mcp + openapi/_original/savee-openapi.json (live spec, fetched 2026-09-03)
+note: >-
+  The Savee OpenAPI declares no operationId on any operation, so REST bindings are recorded as
+  "METHOD /path". The live MCP tools/list is OAuth-gated (401 with an RFC 9728 challenge), so
+  tools are mapped by name and the provider's own docs descriptions; the docs state MCP tools
+  are "built on the same endpoints" as the REST API, which is why read-tool confidence is high.
+surfaces:
+  openapi: openapi/_original/savee-openapi.json
+  openapi_live: https://api.savee.com/v1/openapi.json
+  mcp: https://mcp.savee.com/mcp
+  mcp_gated: true
+  graphql: null
+crosswalk:
+- tool: get_current_user
+  category: user
+  rest:
+  - GET /v1/me
+  binding: same endpoint per provider docs
+  confidence: high
+- tool: list_saves
+  category: saves
+  rest:
+  - GET /v1/saves
+  binding: same endpoint per provider docs
+  confidence: high
+- tool: get_save
+  category: saves
+  rest:
+  - GET /v1/saves/{saveID}
+  binding: same endpoint per provider docs
+  confidence: high
+  note: Both accept the 24-hex id or the 7-char short_id from a savee.com /i/…/ URL.
+- tool: list_feed
+  category: saves
+  rest:
+  - GET /v1/feed
+  binding: same endpoint per provider docs
+  confidence: high
+- tool: list_boards
+  category: boards
+  rest:
+  - GET /v1/boards
+  binding: same endpoint per provider docs
+  confidence: high
+- tool: list_board_saves
+  category: boards
+  rest:
+  - GET /v1/boards/{boardID}/saves
+  binding: same endpoint per provider docs
+  confidence: high
+- tool: search
+  category: search
+  rest:
+  - GET /v1/search
+  binding: same endpoint per provider docs; shares the same 20/5min + 200/week search budget
+  confidence: high
+mcp_only:
+- tool: view_saves
+  reason: >-
+    Returns the actual images for given save ids so the assistant can see them. No REST
+    operation returns media content — REST responses carry media URLs (dm.savee.com) only.
+- tool: create_board
+  reason: No public REST write surface — every REST endpoint is a GET.
+- tool: update_board
+  reason: No public REST write surface — every REST endpoint is a GET.
+- tool: save_items
+  reason: No public REST write surface — every REST endpoint is a GET.
+- tool: remove_save_from_board
+  reason: No public REST write surface — every REST endpoint is a GET.
+rest_only:
+- operation: GET /v1/ping
+  reason: Health check; no MCP tool needed.
+- operation: GET /v1/openapi.json
+  reason: Spec self-description; MCP clients discover tools via tools/list instead.
+- operation: GET /v1/boards/{boardID}
+  reason: >-
+    Single-board lookup has no documented dedicated tool; list_boards returns the full board
+    tree in one call, which covers the same data.
+coverage:
+  mcp_tools: 12
+  tools_mapped_to_rest: 7
+  mcp_only: 5
+  rest_operations: 10
+  rest_only: 3

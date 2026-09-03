@@ -1,0 +1,26 @@
+generated: '2026-09-03'
+method: probed
+source: live DNS/TLS/HTTP probes of apis.yml + OpenAPI hosts
+hosts:
+- host: savee.com
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Nov  7 03:23:27 2026 GMT
+  hsts: false
+- host: docs.savee.com
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Oct  8 19:34:58 2026 GMT
+  hsts: false
+- host: api.savee.com
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Oct 15 21:51:38 2026 GMT
+  hsts: null
+domains:
+- domain: savee.com
+  dnssec: false
+  caa: []
+  spf: true
+  dmarc: true
+  dmarc_policy: quarantine

@@ -1,0 +1,72 @@
+generated: '2026-09-03'
+method: searched
+source: https://docs.savee.com/api/quickstart, https://docs.savee.com/api/authentication, https://docs.savee.com/api/errors, https://docs.savee.com/api/rate-limits, https://docs.savee.com/api/versioning
+derived_from: openapi/_original/savee-openapi.json
+auth:
+  style: bearer
+  schemes:
+  - 'Personal access token: Authorization: Bearer sv_live_… (prefix + 24 chars; one active per user; SHA-256 hashed at rest; shown once)'
+  - 'OAuth 2.1 access token: Authorization: Bearer sv_at_… (scoped; 1-hour lifetime; 30-day rotating refresh tokens sv_rt_…)'
+  cross_link: authentication/savee-authentication.yml
+idempotency:
+  coverage: na
+  note: >-
+    The REST surface has no mutating operation — all 10 operations are GETs, which are
+    idempotent by HTTP semantics — so an idempotency-key mechanism does not apply. The only
+    write surface is the OAuth-gated MCP server's four write tools, which publish write
+    quotas but no replay-protection mechanism.
+reversibility:
+  status: na
+  note: >-
+    No REST write surface, so nothing to reverse. On the MCP write surface the provider's
+    stated posture is damage limitation rather than reversal operations: no delete tool
+    exists at all ("not gated, not built"), remove_save_from_board leaves the save in the
+    account, and new boards default to private — the worst case documented is "untidy". No
+    reversal windows exist to record, and none are asserted here.
+dry_run_mode:
+  status: na
+  note: Read-only REST surface; no dry-run mechanism published, none needed.
+pagination:
+  style: cursor
+  request_params:
+    limit: integer, 1-100, default 30
+    cursor: opaque string; pass next_cursor back verbatim, never parse or store long-term
+  response_fields:
+    data: array of items
+    next_cursor: string or null on the last page
+    has_more: boolean
+  exceptions:
+  - GET /v1/boards returns the caller's full board tree in one unpaginated response
+  unknown_params: >-
+    Paginated endpoints reject unrecognized query keys with 400 INVALID_INPUT rather than
+    ignoring them — deliberate typo protection.
+error_envelope:
+  shape: '{"error": {"code", "message"}}'
+  machine_field: error.code
+  cross_link: errors/savee-problem-types.yml
+rate_limit_signaling:
+  headers: [RateLimit-Policy, RateLimit, Retry-After, X-RateLimit-* (legacy)]
+  status: 429 TOO_MANY_REQUESTS
+  cross_link: rate-limits/savee-rate-limits.yml
+versioning:
+  style: path (/v1/)
+  cross_link: lifecycle/savee-lifecycle.yml
+content_negotiation:
+  media_fallback: >-
+    Image URLs are AVIF by default; send request header "Avif-Fallback: 1" to receive JPG
+    URLs. Video originals are always MP4; video thumbnails are AVIF/JPG poster frames.
+caching:
+  response: 'Cache-Control: private, no-cache — shared caches must not hold user data; clients are encouraged to cache on their own side.'
+cors:
+  policy: 'Access-Control-Allow-Origin: * is sent, but the provider explicitly warns against shipping tokens to browsers — intended for local tooling and server-side clients.'
+request_id_tracing:
+  published: false
+  note: No request-id/trace header is documented.
+field_expansion:
+  published: false
+  note: No expansion or sparse-field mechanism; response shapes are fixed per endpoint.
+identifiers:
+  style: >-
+    24-hex-character ids, stable across renames — safe as foreign keys. Saves and boards also
+    carry a 7-character short_id (the savee.com URL segment); lookup endpoints accept either
+    form, and the two cannot be confused (24 vs 7 chars).

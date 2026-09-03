@@ -1,0 +1,68 @@
+generated: '2026-09-03'
+method: searched
+source: https://docs.savee.com/api/errors
+derived_from: openapi/_original/savee-openapi.json (4xx/5xx responses on every operation)
+format: proprietary-envelope
+note: >-
+  Not RFC 9457 — every error at every status uses one stable proprietary envelope,
+  {"error":{"code","message"}}, served as application/json. The provider's contract is to
+  branch on error.code (stable) never error.message (reworded freely). Verified live:
+  an unauthenticated GET /v1/me returned 401 {"error":{"code":"UNAUTHORIZED","message":
+  "Missing Bearer token"}} on 2026-09-03.
+envelope:
+  shape: '{"error": {"code": "<STABLE_CODE>", "message": "<human text>"}}'
+  content_type: application/json
+  machine_field: error.code
+problem_types:
+- code: INVALID_INPUT
+  status: 400
+  title: Invalid input
+  detail: >-
+    Bad query parameter — an unrecognized key, or limit outside 1-100. Paginated endpoints
+    reject unknown query keys rather than ignoring them (deliberate: a silently ignored typo
+    like limt=10 would page an entire library at default size).
+  remediation: Fix the request. Retrying unchanged will not help.
+- code: UNAUTHORIZED
+  status: 401
+  title: Unauthorized
+  detail: Missing, malformed, or unknown token.
+  remediation: Check the Authorization header; regenerate the token if needed.
+- code: PAYMENT_REQUIRED
+  status: 402
+  title: Payment required
+  detail: Token is valid but the subscription has lapsed.
+  remediation: >-
+    Renew the subscription; the same token starts working again. Retry on a slow schedule
+    (hourly) if the integration should recover on its own.
+- code: FORBIDDEN
+  status: 403
+  title: Forbidden
+  detail: >-
+    API access is not available on this account, or an OAuth token is missing a scope. On
+    insufficient scope the response carries WWW-Authenticate: Bearer
+    error="insufficient_scope", scope="…" naming the missing scope(s) — 403 rather than 401
+    per RFC 6750 §3.1 because the token is valid but does not cover the call.
+  remediation: >-
+    Check the subscription state, or re-authorize asking for the additional scope read from
+    the WWW-Authenticate scope parameter (it may name more than one, space-separated).
+- code: NOT_FOUND
+  status: 404
+  title: Not found
+  detail: >-
+    No such route, or the board/save does not exist or is not visible to the caller. The 404
+    is intentionally ambiguous — the API will not confirm whether someone else's private
+    board or save exists.
+  remediation: Check the path and the id; do not infer existence from a 404.
+- code: TOO_MANY_REQUESTS
+  status: 429
+  title: Rate limit exceeded
+  detail: One of the parallel rate-limit policies is exhausted; Retry-After is always sent.
+  remediation: Wait Retry-After seconds, then retry. See rate-limits/savee-rate-limits.yml.
+- code: INTERNAL_ERROR
+  status: 500
+  title: Unexpected server error
+  remediation: Retry with exponential backoff; report if persistent.
+retry_guidance:
+  retryable: [TOO_MANY_REQUESTS, INTERNAL_ERROR]
+  not_retryable: [INVALID_INPUT, UNAUTHORIZED, FORBIDDEN, NOT_FOUND]
+  self_resolving: [PAYMENT_REQUIRED]

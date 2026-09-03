@@ -1,0 +1,28 @@
+{
+  "provider": "savee",
+  "sources": [
+    "savee-public-api-openapi.yml"
+  ],
+  "outputs": [
+    "savee-boards-api-openapi.yml",
+    "savee-saves-api-openapi.yml",
+    "savee-search-api-openapi.yml",
+    "savee-system-api-openapi.yml",
+    "savee-user-api-openapi.yml"
+  ],
+  "archived": [
+    "archived openapi/savee-public-api-openapi.yml"
+  ],
+  "errors": [],
+  "warnings": [],
+  "notes": [
+    "savee-public-api-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "savee-public-api-openapi.yml: declared missing tag: Boards",
+    "savee-public-api-openapi.yml: declared missing tag: Saves",
+    "savee-public-api-openapi.yml: declared missing tag: Search",
+    "savee-public-api-openapi.yml: declared missing tag: System",
+    "savee-public-api-openapi.yml: declared missing tag: User",
+    "apis.yml register: written (+5 apis, 5 total)"
+  ],
+  "skipped": []
+}

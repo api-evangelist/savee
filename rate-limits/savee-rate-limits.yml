@@ -1,0 +1,93 @@
+generated: '2026-09-03'
+method: searched
+source: https://docs.savee.com/api/rate-limits
+note: >-
+  Fully published, header-first rate limiting. Two general quotas run in parallel per token;
+  search carries its own much tighter pair on top; unauthenticated requests are metered by IP;
+  MCP write tools have separate per-account write quotas (documented at
+  https://docs.savee.com/mcp/permissions). Search quota is per Savee account and shared across
+  every surface the account has connected — REST and MCP draw on the same 200/week.
+limit_count: 10
+limits:
+- policy: burst
+  scope: per-token
+  limit: 60
+  window: 1 minute
+  applies_to: every REST and MCP request
+- policy: sustained
+  scope: per-token
+  limit: 5000
+  window: 1 hour
+  applies_to: every REST and MCP request
+  note: Both burst and sustained are evaluated on every request; both must have room.
+- policy: search-burst
+  scope: per-account
+  limit: 20
+  window: 5 minutes
+  applies_to: GET /v1/search and the MCP search tool
+  note: A search refused by the 5-minute window does not spend weekly quota.
+- policy: search-weekly
+  scope: per-account
+  limit: 200
+  window: 7 days
+  applies_to: GET /v1/search and the MCP search tool
+  note: >-
+    A deliberate ceiling shared across everything the account has connected; cannot be reset
+    by reconnecting. A search costs one general request and one search request.
+- policy: unauthenticated
+  scope: per-IP
+  limit: 30
+  window: 1 minute
+  applies_to: requests without a usable token (missing, malformed, or unknown)
+- policy: boards-created-hourly
+  scope: per-account
+  limit: 10
+  window: 1 hour
+  applies_to: MCP create_board
+- policy: boards-created-weekly
+  scope: per-account
+  limit: 50
+  window: 7 days
+  applies_to: MCP create_board
+- policy: items-saved-hourly
+  scope: per-account
+  limit: 300
+  window: 1 hour
+  applies_to: MCP save_items (counted per item, not per request)
+- policy: items-saved-weekly
+  scope: per-account
+  limit: 3000
+  window: 7 days
+  applies_to: MCP save_items (counted per item, not per request)
+- policy: other-changes-hourly
+  scope: per-account
+  limit: 60
+  window: 1 hour
+  applies_to: other MCP write operations (update_board, remove_save_from_board)
+headers:
+  response:
+  - name: RateLimit-Policy
+    example: 'RateLimit-Policy: "burst";q=60;w=60, "sustained";q=5000;w=3600'
+    description: Declares each active policy's quota (q, requests) and window (w, seconds).
+  - name: RateLimit
+    example: 'RateLimit: "burst";r=57;t=42, "sustained";r=4991;t=3401'
+    description: >-
+      Per-policy state after the current request is charged — r remaining, t seconds to reset.
+      After a 429, the exhausted policy's t serves the same purpose as Retry-After.
+  - name: Retry-After
+    description: Seconds to wait, sent with every 429.
+  - name: X-RateLimit-Bucket / X-RateLimit-Limit / X-RateLimit-Remaining / X-RateLimit-Reset
+    description: >-
+      Legacy headers, still sent; they describe only the policy closest to exhaustion. The
+      provider recommends the structured RateLimit headers instead.
+  note: >-
+    Headers are sent on every response, including errors and requests that never authenticated.
+exhaustion:
+  status: 429
+  error_code: TOO_MANY_REQUESTS
+  behavior: >-
+    A rejected request is charged only to the policy that rejected it — being rate-limited does
+    not burn the hourly budget. Provider guidance: sleep Retry-After seconds, or parse
+    RateLimit and sleep until the largest t among policies with r=0; add jitter across fleets.
+  mcp: 429 with Retry-After plus a JSON-RPC error carrying retryAfterSeconds.
+raises: Contact hey@savee.com for higher limits.

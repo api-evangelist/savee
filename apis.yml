@@ -1,35 +1,42 @@
 aid: savee
 name: Savee
-description: >-
-  Savee is a curated visual-inspiration platform for designers. Its public API exposes that
-  library programmatically — an OpenAPI 3.1 contract of 9 operations and 11 schemas served from
-  api.savee.com, authenticated with either a bearer token or OAuth 2.
+description: 'Savee is a curated visual-inspiration platform for designers. Its public surface is programmatic
+  two ways: a read-only REST API — an OpenAPI 3.1 contract of 10 GET operations and 12 schemas served
+  live from api.savee.com/v1/openapi.json, authenticated with a personal access token or OAuth 2.1 — and
+  an official hosted MCP server at mcp.savee.com/mcp with twelve tools (eight read, four opt-in write)
+  behind spec-conformant OAuth 2.1 with PKCE. Both require an active Savee subscription.'
 type: Index
 url: https://raw.githubusercontent.com/api-evangelist/savee/refs/heads/main/apis.yml
 deliveryModel:
-  model: unknown
+  model: saas
   open_source: false
-  commercial: false
+  commercial: true
   callable_host: true
-  label: Delivery model not determined — needs a product licence on record
-  confidence: low
+  label: Commercial SaaS subscription — API and MCP access are features of the paid plans ($9-15/mo billed
+    yearly)
+  confidence: high
   source:
+  - pricing
   - openapi
-  generated: '2026-08-28'
-  method: derived
+  generated: '2026-09-03'
+  method: searched
 created: '2026-08-26'
-modified: '2026-08-26'
+modified: '2026-09-03'
 specificationVersion: '0.23'
 tags:
 - Design
 - visual inspiration
 - Image
 - Creative
+- Moodboards
+- Artificial Intelligence (AI)
 tags_raw:
 - design
 - visual inspiration
 - images
 - creative
+- moodboards
+- ai
 apis:
 - aid: savee:savee-boards-api
   name: Savee Boards API
@@ -45,9 +52,12 @@ apis:
     url: https://api.savee.com/v1/openapi.json
   - type: Documentation
     url: https://docs.savee.com
+  - type: Overlay
+    url: overlays/savee-boards-api-overlay.yaml
 - aid: savee:savee-saves-api
   name: Savee Saves API
-  description: The Saves API from Savee — 3 operation(s) for saves.
+  description: 'The Saves API from Savee — 4 operation(s) for saves: the user''s own saves, the home feed,
+    a board''s saves, and single-save lookup by id or short_id.'
   humanURL: https://docs.savee.com
   baseURL: https://api.savee.com/v1
   tags:
@@ -59,6 +69,8 @@ apis:
     url: https://api.savee.com/v1/openapi.json
   - type: Documentation
     url: https://docs.savee.com
+  - type: Overlay
+    url: overlays/savee-saves-api-overlay.yaml
 - aid: savee:savee-search-api
   name: Savee Search API
   description: The Search API from Savee — 1 operation(s) for search.
@@ -73,6 +85,8 @@ apis:
     url: https://api.savee.com/v1/openapi.json
   - type: Documentation
     url: https://docs.savee.com
+  - type: Overlay
+    url: overlays/savee-search-api-overlay.yaml
 - aid: savee:savee-system-api
   name: Savee System API
   description: The System API from Savee — 2 operation(s) for system.
@@ -87,6 +101,8 @@ apis:
     url: https://api.savee.com/v1/openapi.json
   - type: Documentation
     url: https://docs.savee.com
+  - type: Overlay
+    url: overlays/savee-system-api-overlay.yaml
 - aid: savee:savee-user-api
   name: Savee User API
   description: The User API from Savee — 1 operation(s) for user.
@@ -101,21 +117,86 @@ apis:
     url: https://api.savee.com/v1/openapi.json
   - type: Documentation
     url: https://docs.savee.com
+  - type: Overlay
+    url: overlays/savee-user-api-overlay.yaml
 common:
-- {type: LLMsTxt, url: llms/savee-llms.txt}
-- {type: Website, url: 'https://savee.com'}
-- {type: DeveloperPortal, url: 'https://docs.savee.com'}
+- type: VulnerabilityDisclosure
+  url: security/savee-vulnerability-disclosure.yml
+- type: DomainSecurity
+  url: security/savee-domain-security.yml
+- type: Authentication
+  url: authentication/savee-authentication.yml
+- type: OAuthScopes
+  url: scopes/savee-scopes.yml
+- type: LLMsTxt
+  url: llms/savee-llms.txt
+- type: Website
+  url: https://savee.com
+- type: DeveloperPortal
+  url: https://docs.savee.com
+- type: MCPServer
+  url: mcp/savee-mcp.yml
+- type: ToolCrosswalk
+  url: mcp/savee-tool-crosswalk.yml
+- type: WellKnown
+  url: well-known/savee-well-known.yml
+- type: SecurityTxt
+  url: well-known/savee-security.txt
+- type: Security
+  url: security/savee-vulnerability-disclosure.yml
+- type: Conformance
+  url: conformance/savee-conformance.yml
+- type: ErrorCatalog
+  url: errors/savee-problem-types.yml
+- type: Lifecycle
+  url: lifecycle/savee-lifecycle.yml
+- type: Conventions
+  url: conventions/savee-conventions.yml
+- type: DataModel
+  url: data-model/savee-data-model.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: Plans
+  url: plans/savee-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/savee-rate-limits.yml
+- type: Documentation
+  url: https://docs.savee.com
+- type: APIReference
+  url: https://docs.savee.com/api/reference
+- type: GettingStarted
+  url: https://docs.savee.com/api/quickstart
+- type: Pricing
+  url: https://savee.com/pricing/
+- type: TermsOfService
+  url: https://savee.com/terms/
+- type: PrivacyPolicy
+  url: https://savee.com/privacy/
+- type: Blog
+  url: https://savee.com/blog
+- type: GitHubOrganization
+  url: https://github.com/saveeit
+- type: Support
+  url: https://savee.com/contact
+- type: SignUp
+  url: https://savee.com/join
 maintainers:
-- {FN: Savee, email: hey@savee.com, url: 'https://savee.com'}
+- FN: Savee
+  email: hey@savee.com
+  url: https://savee.com
 x-provenance:
   added: '2026-08-26'
   method: searched
   source: https://docs.savee.com/llms.txt
-  note: >-
-    Submitted via apis.io/add on 2026-08-26 and auto-published by the gate at rating 23. The
-    submitted APIs.json URL does not exist — docs.savee.com/apis.json and
-    /.well-known/apis.json both return real 404s against a control that also 404s.
-    The specification was found by reading the provider's own llms.txt, which names it at
-    https://api.savee.com/v1/openapi.json — a different host from the one submitted. Fetched and
-    verified: OpenAPI 3.1, 9 paths, 11 schemas, BearerAuth and OAuth2. The low gate rating
-    reflects the missing apis.json, not the API.
+  note: 'Submitted via apis.io/add on 2026-08-26 and auto-published by the gate at rating 23. The submitted
+    APIs.json URL does not exist — docs.savee.com/apis.json and /.well-known/apis.json both return real
+    404s against a control that also 404s. The specification was found by reading the provider''s own
+    llms.txt, which names it at https://api.savee.com/v1/openapi.json — a different host from the one
+    submitted. Fetched and verified: OpenAPI 3.1, 9 paths, 11 schemas, BearerAuth and OAuth2. The low
+    gate rating reflects the missing apis.json, not the API.'
+image: https://m.savee-cdn.com/img/default-og-image.jpg
+x-enrichment:
+  date: '2026-09-03'
+  status: enriched
+  artifacts_added: 30
+  pass: local-v2

@@ -1,0 +1,23 @@
+generated: '2026-09-03'
+method: searched
+source: registry probes + https://github.com/saveeit + https://docs.savee.com
+package_count: 0
+packages: []
+note: >-
+  No first-party client libraries exist on any registry. Probed 2026-09-03:
+  registry.npmjs.org/savee 404, registry.npmjs.org/@savee/mcp 404, pypi.org/pypi/savee/json
+  404. The saveeit GitHub org ships only the hosted-MCP manifests repo (savee-mcp-server) and
+  the Agent Skill repo (skills) — neither is a client library, and both are captured in mcp/
+  and skills/. This is consistent with the provider's stated developer strategy: point
+  clients and code generators at the live OpenAPI at https://api.savee.com/v1/openapi.json
+  rather than shipping SDK snapshots (https://docs.savee.com/api/versioning).
+probes:
+- registry: npm
+  package: savee
+  status: 404
+- registry: npm
+  package: '@savee/mcp'
+  status: 404
+- registry: pypi
+  package: savee
+  status: 404

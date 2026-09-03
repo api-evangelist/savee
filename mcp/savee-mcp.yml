@@ -1,0 +1,87 @@
+generated: '2026-09-03'
+method: searched
+source: https://docs.savee.com/mcp
+name: Savee MCP Server
+status: official
+deployment:
+  mode: remote
+  endpoint: https://mcp.savee.com/mcp
+  auth: oauth
+  verified: probed
+probe:
+  url: https://mcp.savee.com/mcp
+  request: 'POST tools/list (unauthenticated)'
+  http_status: 401
+  www_authenticate: 'Bearer error="invalid_token", resource_metadata="https://mcp.savee.com/.well-known/oauth-protected-resource"'
+  note: >-
+    Endpoint is live and OAuth-gated per the MCP authorization spec: a 401 with an RFC 9728
+    WWW-Authenticate challenge naming the protected-resource metadata document. The live tool
+    schemas therefore need authenticated introspection; the tool list below is taken from the
+    provider's own documentation at https://docs.savee.com/mcp, not from tools/list.
+protocol:
+  revision: '2026-07-28'
+  transport: streamable-http
+  stateless: true
+  authorization: 'OAuth 2.1 with PKCE (S256 only), RFC 8707 resource indicators, RFC 9728 protected resource metadata; Client ID Metadata Documents preferred, Dynamic Client Registration supported but discouraged'
+  authorization_server: https://savee.com
+  source: https://docs.savee.com/mcp/developers
+registry_manifest:
+  file: mcp/savee-mcp-server.json
+  source: https://github.com/saveeit/savee-mcp-server
+  name: com.savee/savee
+  version: 1.0.1
+  note: >-
+    Official MCP registry server.json (schema 2025-12-11) published by the saveeit GitHub org,
+    declaring the streamable-http remote at https://mcp.savee.com/mcp. The manifest's
+    description still says "Read-only" while the docs now list four write tools — provider-side
+    drift, recorded as found.
+tools:
+  source: https://docs.savee.com/mcp
+  note: >-
+    Twelve tools documented — eight read tools always present, four write tools that appear
+    only when the user grants saves:write / boards:write at connect time. Names and
+    descriptions are the provider's own; input schemas are not published and the live
+    tools/list is auth-gated. There is deliberately no delete tool of any kind.
+  read:
+  - name: get_current_user
+    description: Which Savee account the connection is for, and its plan
+  - name: list_saves
+    description: The user's own saves, newest first — including private ones
+  - name: get_save
+    description: One specific save, looked up from a savee.com link or its id
+  - name: list_feed
+    description: 'Home feed: saves from people the user follows, plus curated content'
+  - name: list_boards
+    description: Every board the user can see, including team and collaborator boards
+  - name: list_board_saves
+    description: The saves on one specific board
+  - name: search
+    description: Savee's public library — everyone's work, not just the user's
+  - name: view_saves
+    description: The actual images for specific saves, so the assistant can see them
+  write:
+  - name: create_board
+    description: Makes a new board, or a sub board under an existing one
+  - name: update_board
+    description: Renames a board, or changes its description or privacy
+  - name: save_items
+    description: Saves items into the account, optionally onto a board
+  - name: remove_save_from_board
+    description: Takes one save off a board, leaving it in the account
+scopes:
+- profile:read
+- saves:read
+- boards:read
+- search:read
+- saves:write
+- boards:write
+rate_limits:
+  note: >-
+    Same quotas as the REST API (60/min burst, 5,000/hr sustained) keyed on the OAuth access
+    token, same RateLimit headers, 429 with Retry-After plus a JSON-RPC error carrying
+    retryAfterSeconds. Search shares the account-wide 20-per-5-minutes / 200-per-week budget.
+    Writes are metered separately (see rate-limits/savee-rate-limits.yml).
+  source: https://docs.savee.com/api/rate-limits
+requirements: Active Savee subscription with API access, checked on every request
+docs: https://docs.savee.com/mcp
+install_docs: https://docs.savee.com/mcp/install

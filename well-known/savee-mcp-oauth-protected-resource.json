@@ -1,0 +1,1 @@
+{"resource":"https://mcp.savee.com/","authorization_servers":["https://savee.com"],"scopes_supported":["profile:read","saves:read","boards:read","search:read","saves:write","boards:write"],"resource_name":"Savee","resource_documentation":"https://docs.savee.com/"}

@@ -1,0 +1,39 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements — Savee Public Search API
+  version: 1.0.0
+extends: savee-search-api-openapi.yml
+x-provenance:
+  generated: '2026-09-03'
+  method: generated
+  source: openapi/savee-search-api-openapi.yml + https://docs.savee.com
+actions:
+- target: $.info
+  update:
+    x-apievangelist:
+      provider: savee
+      enriched: '2026-09-03'
+      source: https://api.savee.com/v1/openapi.json
+      note: Per-tag split of the live Savee Public API OpenAPI; see the overlay actions for docs and runtime-semantics
+        cross-links.
+- target: $
+  update:
+    externalDocs:
+      description: Savee Search endpoint reference
+      url: https://docs.savee.com/api/reference/search
+- target: $.info
+  update:
+    x-rate-limits:
+      burst: 60 requests / minute per token
+      sustained: 5000 requests / hour per token
+      headers:
+      - RateLimit-Policy
+      - RateLimit
+      - Retry-After
+      docs: https://docs.savee.com/api/rate-limits
+- target: $.info
+  update:
+    x-search-quota:
+      search-burst: 20 searches / 5 minutes per account
+      search-weekly: 200 searches / 7 days per account, shared across REST and MCP
+      docs: https://docs.savee.com/api/rate-limits

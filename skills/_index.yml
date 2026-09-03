@@ -1,0 +1,33 @@
+generated: '2026-09-03'
+method: searched
+source: https://github.com/saveeit/skills
+note: >-
+  Provider-published Agent Skill, saved verbatim from the saveeit/skills GitHub repo
+  (skills/api/). Savee documents it at https://docs.savee.com/api/skill and distributes it via
+  "npx skills add https://github.com/saveeit/skills --skill api". The skill deliberately embeds
+  no credentials and no spec snapshot — it points agents at the live OpenAPI document at
+  https://api.savee.com/v1/openapi.json and reads the token from the SAVEE_TOKEN environment
+  variable. Because these are the provider's own files, no additional skills were authored on
+  their behalf.
+skills:
+- name: api
+  file: skills/savee-api-skill.md
+  source: https://raw.githubusercontent.com/saveeit/skills/main/skills/api/SKILL.md
+  description: >-
+    Read the authenticated user's saves, boards, and home feed from Savee.com via its Public
+    REST API.
+  api: savee:savee-saves-api
+  operations:
+  - GET /v1/me
+  - GET /v1/saves
+  - GET /v1/feed
+  - GET /v1/boards
+  - GET /v1/boards/{boardID}/saves
+  examples:
+  - file: skills/savee-api-skill-example-latest-saves.md
+    source: https://raw.githubusercontent.com/saveeit/skills/main/skills/api/examples/latest-saves.md
+  - file: skills/savee-api-skill-example-feed.md
+    source: https://raw.githubusercontent.com/saveeit/skills/main/skills/api/examples/feed.md
+  install: npx skills add https://github.com/saveeit/skills --skill api
+  auth: 'Authorization: Bearer token from the SAVEE_TOKEN environment variable'
+  docs: https://docs.savee.com/api/skill

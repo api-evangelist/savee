@@ -1,0 +1,83 @@
+generated: '2026-09-03'
+method: probed
+source: live probes 2026-09-03 + https://docs.savee.com/mcp/developers + openapi/_original/savee-openapi.json
+note: >-
+  Standards posture is unusually explicit for a provider this size: the OAuth stack is the
+  modern RFC set end-to-end and the docs cite the RFCs by number. No domain standard exists
+  for the visual-inspiration/moodboard market, so no domain_standard_conformance is asserted
+  (reward-only; absence is not a gap).
+conformance:
+- id: oauth2
+  conforms: true
+  evidence: >-
+    OAuth 2.1 authorization-code flow with PKCE (S256 only, plain rejected). RFC 8414
+    authorization-server metadata served live at
+    https://savee.com/.well-known/oauth-authorization-server (probed 200, saved to
+    well-known/). Confidential clients required to authenticate (client_secret_basic or
+    client_secret_post).
+- id: oauth2-pkce
+  conforms: true
+  evidence: code_challenge_methods_supported ["S256"] in the served metadata; docs require S256.
+- id: rfc8414-authorization-server-metadata
+  conforms: true
+  evidence: https://savee.com/.well-known/oauth-authorization-server probed 200, 2026-09-03.
+- id: rfc9728-protected-resource-metadata
+  conforms: true
+  evidence: >-
+    https://mcp.savee.com/.well-known/oauth-protected-resource probed 200; the MCP endpoint's
+    401 challenge names it in WWW-Authenticate resource_metadata, as the spec intends.
+- id: rfc8707-resource-indicators
+  conforms: true
+  evidence: >-
+    docs.savee.com/api/oauth and /mcp/developers require the resource parameter on both
+    authorization and token requests; tokens are audience-bound and rejected elsewhere.
+- id: rfc7009-token-revocation
+  conforms: true
+  evidence: >-
+    revocation_endpoint https://savee.com/api/oauth/revoke/ in served metadata; docs state
+    unknown/already-revoked tokens return 200 per the RFC, and refresh-token revocation kills
+    the rotation chain.
+- id: rfc6750-bearer-token-usage
+  conforms: true
+  evidence: >-
+    Bearer tokens in the Authorization header; insufficient scope returns 403 with
+    WWW-Authenticate: Bearer error="insufficient_scope", scope="…" — docs cite RFC 6750 §3.1.
+- id: rfc9116-security-txt
+  conforms: true
+  evidence: >-
+    https://savee.com/.well-known/security.txt probed 200 with Contact, Expires (2027-03-02),
+    Preferred-Languages and Canonical fields.
+- id: rfc9727-api-catalog
+  conforms: true
+  evidence: >-
+    https://savee.com/.well-known/api-catalog probed 200, application/linkset+json, listing
+    the REST API (with its OpenAPI as service-desc) and the MCP server.
+- id: ratelimit-header-fields
+  conforms: true
+  evidence: >-
+    Structured RateLimit-Policy / RateLimit response headers (draft-ietf-httpapi-ratelimit-headers
+    shape) documented at docs.savee.com/api/rate-limits, alongside legacy X-RateLimit-* and
+    Retry-After on 429.
+- id: mcp-2026-07-28
+  conforms: true
+  evidence: >-
+    docs.savee.com/mcp/developers states the server implements the 2026-07-28 MCP revision
+    over Streamable HTTP, stateless, with spec-conformant OAuth authorization; the live
+    endpoint's 401 challenge behavior matches. Live tools/list verification is auth-gated.
+- id: openapi-3.1
+  conforms: true
+  evidence: >-
+    https://api.savee.com/v1/openapi.json serves OpenAPI 3.1.0, self-hosted as an API
+    endpoint and generated from the serializing schemas.
+- id: pagination
+  conforms: true
+  evidence: Uniform cursor pagination (limit/cursor -> data/next_cursor/has_more) across all list endpoints except the deliberately-unpaginated /v1/boards tree.
+- id: rfc9457
+  conforms: false
+  evidence: >-
+    Errors use a stable proprietary {"error":{code,message}} envelope as application/json,
+    not application/problem+json — see errors/savee-problem-types.yml.
+- id: rfc8594-sunset
+  conforms: false
+  evidence: No Sunset/Deprecation headers or deprecation policy published; v1 is the only version.
+domain_standard: null

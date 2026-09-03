@@ -1,0 +1,118 @@
+generated: '2026-09-03'
+method: searched
+source: openapi/savee-boards-api-openapi.yml, openapi/savee-saves-api-openapi.yml, openapi/savee-search-api-openapi.yml,
+  openapi/savee-user-api-openapi.yml + https://docs.savee.com/api/oauth + https://savee.com/.well-known/oauth-authorization-server
+  (probed 2026-09-03)
+schemes:
+- name: OAuth2
+  source: openapi/savee-boards-api-openapi.yml
+  flows:
+  - flow: authorizationCode
+    authorizationUrl: https://savee.com/oauth/authorize/
+    tokenUrl: https://savee.com/api/oauth/token/
+  description: |-
+    **OAuth access token** (`sv_at_…`) — obtained on one of your users’ behalf and limited to the scopes they approved. Use this when you’re building a product other people sign into with Savee. See https://docs.savee.com/api/oauth.
+
+    Missing the scope below returns `403` with a `WWW-Authenticate: Bearer error="insufficient_scope"` header naming it.
+- name: OAuth2
+  source: openapi/savee-saves-api-openapi.yml
+  flows:
+  - flow: authorizationCode
+    authorizationUrl: https://savee.com/oauth/authorize/
+    tokenUrl: https://savee.com/api/oauth/token/
+  description: |-
+    **OAuth access token** (`sv_at_…`) — obtained on one of your users’ behalf and limited to the scopes they approved. Use this when you’re building a product other people sign into with Savee. See https://docs.savee.com/api/oauth.
+
+    Missing the scope below returns `403` with a `WWW-Authenticate: Bearer error="insufficient_scope"` header naming it.
+- name: OAuth2
+  source: openapi/savee-search-api-openapi.yml
+  flows:
+  - flow: authorizationCode
+    authorizationUrl: https://savee.com/oauth/authorize/
+    tokenUrl: https://savee.com/api/oauth/token/
+  description: |-
+    **OAuth access token** (`sv_at_…`) — obtained on one of your users’ behalf and limited to the scopes they approved. Use this when you’re building a product other people sign into with Savee. See https://docs.savee.com/api/oauth.
+
+    Missing the scope below returns `403` with a `WWW-Authenticate: Bearer error="insufficient_scope"` header naming it.
+- name: OAuth2
+  source: openapi/savee-user-api-openapi.yml
+  flows:
+  - flow: authorizationCode
+    authorizationUrl: https://savee.com/oauth/authorize/
+    tokenUrl: https://savee.com/api/oauth/token/
+  description: |-
+    **OAuth access token** (`sv_at_…`) — obtained on one of your users’ behalf and limited to the scopes they approved. Use this when you’re building a product other people sign into with Savee. See https://docs.savee.com/api/oauth.
+
+    Missing the scope below returns `403` with a `WWW-Authenticate: Bearer error="insufficient_scope"` header naming it.
+scopes:
+- scope: boards:read
+  description: Read the user’s boards and the saves on them
+  flows:
+  - authorizationCode
+  sources:
+  - openapi/savee-boards-api-openapi.yml
+  - openapi/savee-saves-api-openapi.yml
+  - openapi/savee-search-api-openapi.yml
+  - openapi/savee-user-api-openapi.yml
+  default: true
+- scope: profile:read
+  description: Read the user’s username, name, and avatar
+  flows:
+  - authorizationCode
+  sources:
+  - openapi/savee-boards-api-openapi.yml
+  - openapi/savee-saves-api-openapi.yml
+  - openapi/savee-search-api-openapi.yml
+  - openapi/savee-user-api-openapi.yml
+  default: true
+- scope: saves:read
+  description: Read the user’s saves and home feed
+  flows:
+  - authorizationCode
+  sources:
+  - openapi/savee-boards-api-openapi.yml
+  - openapi/savee-saves-api-openapi.yml
+  - openapi/savee-search-api-openapi.yml
+  - openapi/savee-user-api-openapi.yml
+  default: true
+- scope: search:read
+  description: Search Savee’s public library on the user’s behalf
+  flows:
+  - authorizationCode
+  sources:
+  - openapi/savee-boards-api-openapi.yml
+  - openapi/savee-saves-api-openapi.yml
+  - openapi/savee-search-api-openapi.yml
+  - openapi/savee-user-api-openapi.yml
+  default: false
+  note: Not in the default grant; reads the public library, not the user's account. Shares the account-wide
+    20/5min + 200/week search budget.
+- scope: saves:write
+  description: Save items to your account and change their privacy
+  flows:
+  - authorizationCode
+  default: false
+  surfaces:
+  - mcp
+  sources:
+  - https://savee.com/.well-known/oauth-authorization-server
+  - https://docs.savee.com/mcp/permissions
+  note: 'MCP-only: gates the save_items write tool. Not used by any REST operation.'
+- scope: boards:write
+  description: Create and edit your boards, and add or remove saves on them
+  flows:
+  - authorizationCode
+  default: false
+  surfaces:
+  - mcp
+  sources:
+  - https://savee.com/.well-known/oauth-authorization-server
+  - https://docs.savee.com/mcp/permissions
+  note: 'MCP-only: gates create_board, update_board and remove_save_from_board. Not used by any REST operation.'
+docs: https://docs.savee.com/api/oauth
+notes: 'The authorization-server metadata advertises six scopes; the two write scopes are used only by
+  the MCP server''s write tools (the REST API has no write surface). Requesting no scope grants the three
+  account-read scopes (profile:read, saves:read, boards:read); search:read is never granted implicitly
+  and must be asked for. Write scopes are marked separately on the consent screen and never granted implicitly.
+  A call missing a scope returns 403 with WWW-Authenticate: Bearer error="insufficient_scope" naming the
+  missing scope(s).'

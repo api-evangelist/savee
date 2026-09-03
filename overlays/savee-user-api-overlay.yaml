@@ -1,0 +1,33 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements — Savee Public User API
+  version: 1.0.0
+extends: savee-user-api-openapi.yml
+x-provenance:
+  generated: '2026-09-03'
+  method: generated
+  source: openapi/savee-user-api-openapi.yml + https://docs.savee.com
+actions:
+- target: $.info
+  update:
+    x-apievangelist:
+      provider: savee
+      enriched: '2026-09-03'
+      source: https://api.savee.com/v1/openapi.json
+      note: Per-tag split of the live Savee Public API OpenAPI; see the overlay actions for docs and runtime-semantics
+        cross-links.
+- target: $
+  update:
+    externalDocs:
+      description: Savee User endpoint reference
+      url: https://docs.savee.com/api/reference/user
+- target: $.info
+  update:
+    x-rate-limits:
+      burst: 60 requests / minute per token
+      sustained: 5000 requests / hour per token
+      headers:
+      - RateLimit-Policy
+      - RateLimit
+      - Retry-After
+      docs: https://docs.savee.com/api/rate-limits

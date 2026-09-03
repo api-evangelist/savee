@@ -1,0 +1,66 @@
+generated: '2026-09-03'
+method: derived
+source: openapi/_original/savee-openapi.json ($ref links and id-reference fields), https://docs.savee.com/api/reference
+entities:
+- name: Me
+  description: The authenticated member — a User plus subscription plan state.
+  key: id (24 hex chars, stable across renames)
+  fields: [id, username, name, url, avatar_url, plan.active, plan.tiers]
+- name: User
+  description: The member who created a save; present where the author may differ from the caller.
+  key: id (24 hex chars, stable across renames)
+  fields: [id, username, name, url, avatar_url]
+- name: Save
+  description: One saved visual asset (image or video).
+  key: id (24 hex chars); also addressable by 7-char short_id from its savee.com /i/…/ URL
+  fields: [id, url, name, source_url, created_at, is_private, total_saves, media, colors, user]
+- name: SaveMedia
+  description: The asset behind a save — type, dimensions, thumbnail and original URLs (AVIF/JPG/MP4).
+  embedded_in: Save
+- name: SaveColor
+  description: One dominant color of the media with its coverage fraction, most prominent first.
+  embedded_in: Save
+- name: Board
+  description: A collection of saves; may nest sub-boards one level deep.
+  key: id (24 hex chars, stable across renames and slug changes); also addressable by short_id
+  fields: [id, name, slug, url, is_private, saves_count, created_at, og_image, ownership_type, sub_boards]
+- name: SubBoard
+  description: A child board — same shape as Board but its own sub_boards is always empty (single-level nesting).
+  key: id
+relationships:
+- from: Save
+  to: User
+  type: belongs_to
+  via: user
+  note: >-
+    Omitted on /v1/saves (the caller is implicitly the author); present on /v1/feed,
+    /v1/boards/{boardID}/saves and /v1/saves/{saveID}.
+- from: Board
+  to: SubBoard
+  type: has_many
+  via: sub_boards
+  note: Single-level nesting — a SubBoard's own sub_boards is always empty.
+- from: Board
+  to: Save
+  type: has_many
+  via: GET /v1/boards/{boardID}/saves
+  note: >-
+    A save lives on a board OR on one of its sub-boards, never both — filing a save under a
+    sub-board takes it off the parent.
+- from: Me
+  to: Save
+  type: has_many
+  via: GET /v1/saves
+- from: Me
+  to: Board
+  type: has_many
+  via: GET /v1/boards (full tree, including collaborated and team-workspace boards)
+- from: Board
+  to: Me
+  type: belongs_to
+  via: ownership_type
+  note: '"user" for a personal/collaborated board, "team" for a Savee Teams workspace board.'
+identifier_scheme:
+  id: 24 hexadecimal characters, stable across renames/slug changes, safe as foreign keys
+  short_id: 7 characters, the savee.com URL segment; accepted interchangeably with id on lookup endpoints
+  disambiguation: The two forms cannot be confused — 24 vs 7 characters.

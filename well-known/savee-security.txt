@@ -1,0 +1,4 @@
+Contact: mailto:hey@savee.com
+Expires: 2027-03-02T00:00:00Z
+Preferred-Languages: en
+Canonical: https://savee.com/.well-known/security.txt

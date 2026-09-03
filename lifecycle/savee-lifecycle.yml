@@ -1,0 +1,45 @@
+generated: '2026-09-03'
+method: searched
+source: https://docs.savee.com/api/versioning
+versioning:
+  scheme: path
+  current: v1
+  policy: >-
+    The version lives in the path; a /v2/ would be a separate surface served alongside /v1/
+    rather than replacing it. Within v1: fields are never removed or retyped, error.code
+    values are contract, ids are stable across renames, and paths/methods never move. Additive
+    change is allowed without notice: new fields, new endpoints, cursor encoding, error
+    message wording, in-page ordering, and rate-limit values (raised before lowered, with the
+    current values always in the response headers).
+  client_guidance: >-
+    Parse permissively, treat cursors as opaque, read limits from headers, and point code
+    generators at the live /v1/openapi.json (generated from the same schemas that serialize
+    responses, so it cannot drift).
+deprecation:
+  policy_published: false
+  sunset_headers: false
+  note: >-
+    No deprecation policy, Deprecation/Sunset (RFC 8594) headers, or dated deprecation
+    process is published — v1 is the first and only version and nothing has been deprecated.
+    The versioning page's stability guarantees are the nearest thing to one.
+deprecated_operations: []
+status_page:
+  published: false
+  note: >-
+    No status page found. status.savee.com answers 200 but serves the savee.com SPA shell
+    (soft-404), and savee.com/status is not linked anywhere in the docs. Probed 2026-09-03.
+sla:
+  published: false
+changelog:
+  published: false
+  note: >-
+    No developer changelog found: docs.savee.com/changelog returns a real 404 and
+    savee.com/changelog serves the SPA shell. Spec currency is handled by pointing clients at
+    the live OpenAPI instead.
+observed_changes:
+- date: '2026-09-03'
+  note: >-
+    Between the 2026-08-26 harvest and 2026-09-03, the live OpenAPI gained GET
+    /v1/saves/{saveID} (single-save lookup by id or short_id, with a new SaveResponse schema)
+    and /v1/boards/{boardID}* began accepting the board short_id as well as the id — additive,
+    consistent with the published policy.

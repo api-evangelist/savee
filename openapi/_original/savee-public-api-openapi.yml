@@ -10,18 +10,12 @@ info:
   license:
     name: Proprietary — Savee Terms of Service
     url: https://savee.com/terms/
-  description: 'Read-only REST API exposing a Savee user’s own saves, boards, and home feed, plus search
-    over Savee’s public library.
+  description: |-
+    Read-only REST API exposing a Savee user’s own saves, boards, and home feed, plus search over Savee’s public library.
 
+    Authenticate with either a personal access token (`sv_live_…`) generated in your Savee settings, or an OAuth 2.1 access token (`sv_at_…`) obtained on one of your users’ behalf. OAuth tokens are limited to the scopes the user approved; personal tokens carry all of them.
 
-    Authenticate with either a personal access token (`sv_live_…`) generated in your Savee settings, or
-    an OAuth 2.1 access token (`sv_at_…`) obtained on one of your users’ behalf. OAuth tokens are limited
-    to the scopes the user approved; personal tokens carry all of them.
-
-
-    **Image format** — `media.thumbnail` and `media.original` for image saves are AVIF by default. Clients
-    that cannot decode AVIF should send the request header `Avif-Fallback: 1` to receive JPG URLs instead.
-    Video originals are always MP4.'
+    **Image format** — `media.thumbnail` and `media.original` for image saves are AVIF by default. Clients that cannot decode AVIF should send the request header `Avif-Fallback: 1` to receive JPG URLs instead. Video originals are always MP4.
 servers:
 - url: https://api.savee.com
 components:
@@ -35,13 +29,10 @@ components:
         one at https://savee.com/developers/.'
     OAuth2:
       type: oauth2
-      description: '**OAuth access token** (`sv_at_…`) — obtained on one of your users’ behalf and limited
-        to the scopes they approved. Use this when you’re building a product other people sign into with
-        Savee. See https://docs.savee.com/api/oauth.
+      description: |-
+        **OAuth access token** (`sv_at_…`) — obtained on one of your users’ behalf and limited to the scopes they approved. Use this when you’re building a product other people sign into with Savee. See https://docs.savee.com/api/oauth.
 
-
-        Missing the scope below returns `403` with a `WWW-Authenticate: Bearer error="insufficient_scope"`
-        header naming it.'
+        Missing the scope below returns `403` with a `WWW-Authenticate: Bearer error="insufficient_scope"` header naming it.
       flows:
         authorizationCode:
           authorizationUrl: https://savee.com/oauth/authorize/
@@ -205,6 +196,12 @@ components:
           description: Save identifier. Stable across renames; safe to store as a foreign key on the caller’s
             side.
           example: 67aada20d242ec0009400825
+        short_id:
+          type: string
+          description: The save’s short identifier — the segment in its savee.com URL (`savee.com/i/{short_id}/`).
+            Also stable across renames. Accepted anywhere `saveID` is, so a savee.com link can be turned
+            into an API call without a lookup step.
+          example: UXb_bvc
         url:
           type: string
           format: uri
@@ -245,6 +242,7 @@ components:
           $ref: '#/components/schemas/User'
       required:
       - id
+      - short_id
       - url
       - name
       - source_url
@@ -274,6 +272,13 @@ components:
       - data
       - next_cursor
       - has_more
+    SaveResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Save'
+      required:
+      - data
     SubBoard:
       type: object
       properties:
@@ -281,6 +286,10 @@ components:
           type: string
           description: Board identifier. Stable across renames and slug changes; safe to store as a foreign
             key on the caller’s side.
+        short_id:
+          type: string
+          description: The board’s short identifier. Also stable across renames and slug changes, and
+            accepted anywhere `boardID` is.
         name:
           type: string
         slug:
@@ -317,6 +326,7 @@ components:
           maxItems: 0
       required:
       - id
+      - short_id
       - name
       - slug
       - url
@@ -334,6 +344,11 @@ components:
           description: Board identifier. Stable across renames and slug changes; safe to store as a foreign
             key on the caller’s side.
           example: 69fbaf96d242ec48009df59a
+        short_id:
+          type: string
+          description: The board’s short identifier. Also stable across renames and slug changes, and
+            accepted anywhere `boardID` is.
+          example: Lp9wQ2s
         name:
           type: string
           example: Posters
@@ -380,6 +395,7 @@ components:
             preference as the top level.
       required:
       - id
+      - short_id
       - name
       - slug
       - url
@@ -568,6 +584,79 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /v1/saves/{saveID}:
+    get:
+      summary: Get a single save
+      description: |-
+        Look up one save by either of its identifiers.
+
+        `saveID` accepts the `id` returned by any listing endpoint (`67aada20d242ec0009400825`) **or** the save's `short_id` — the segment in its savee.com URL. So a link like `https://savee.com/i/997d6DW/` becomes `GET /v1/saves/997d6DW` directly, with no lookup step in between. The two forms can't be confused: an `id` is 24 hex characters, a `short_id` is 7.
+
+        Visible to the caller are their own saves (including private ones) and any public save on Savee. A save that exists but isn't visible returns 404 rather than 403 — the API does not confirm whether someone else's private save exists. Unlike `/v1/saves`, the response always includes the `user` who created the save, since it may not be the caller.
+      tags:
+      - Saves
+      security:
+      - BearerAuth: []
+      - OAuth2:
+        - saves:read
+      parameters:
+      - schema:
+          type: string
+          description: The save `id`, or its `short_id` from a savee.com `/i/…/` URL.
+          example: 997d6DW
+        required: true
+        description: The save `id`, or its `short_id` from a savee.com `/i/…/` URL.
+        name: saveID
+        in: path
+      responses:
+        '200':
+          description: The save.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveResponse'
+        '400':
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid Bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
+          description: Authenticated but the user has no active subscription.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: The Public API is not available on this account.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Save not found or not visible to the caller.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded. Retry after the number of seconds in `Retry-After`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Unexpected server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /v1/feed:
     get:
       summary: List the authenticated user’s home feed
@@ -701,12 +790,12 @@ paths:
   /v1/boards/{boardID}:
     get:
       summary: Get a single board
-      description: '`boardID` is the board `id` returned by `/v1/boards`. Returns the board with its child
-        boards nested under `sub_boards` — the same shape as a node in the `/v1/boards` tree — so there
-        is no separate sub-boards endpoint. Accessible by any user with a role on the board (owner, admin,
-        editor, viewer) and by team members for team-owned boards. Returns 404 when the board does not
-        exist or the caller has no role on it — the API does not confirm whether someone else’s board
-        exists.'
+      description: '`boardID` is either the board `id` or the `short_id` returned by `/v1/boards`; both
+        are accepted and both are stable across renames. Returns the board with its child boards nested
+        under `sub_boards` — the same shape as a node in the `/v1/boards` tree — so there is no separate
+        sub-boards endpoint. Accessible by any user with a role on the board (owner, admin, editor, viewer)
+        and by team members for team-owned boards. Returns 404 when the board does not exist or the caller
+        has no role on it — the API does not confirm whether someone else’s board exists.'
       tags:
       - Boards
       security:
@@ -716,9 +805,9 @@ paths:
       parameters:
       - schema:
           type: string
-          description: The board id (the `id` returned by `/v1/boards`).
+          description: The board `id`, or its `short_id` — both are returned by `/v1/boards`.
         required: true
-        description: The board id (the `id` returned by `/v1/boards`).
+        description: The board `id`, or its `short_id` — both are returned by `/v1/boards`.
         name: boardID
         in: path
       responses:
@@ -773,10 +862,10 @@ paths:
   /v1/boards/{boardID}/saves:
     get:
       summary: List saves on a specific board
-      description: '`boardID` is the board `id` returned by `/v1/boards`. Accessible by any user with
-        a role on the board (owner, admin, editor, viewer) and by team members for team-owned boards.
-        Returns 404 when the board does not exist or the caller has no role on it — the API does not confirm
-        whether someone else’s board exists.'
+      description: '`boardID` is either the board `id` or the `short_id` returned by `/v1/boards`; both
+        are accepted. Accessible by any user with a role on the board (owner, admin, editor, viewer) and
+        by team members for team-owned boards. Returns 404 when the board does not exist or the caller
+        has no role on it — the API does not confirm whether someone else’s board exists.'
       tags:
       - Boards
       - Saves
@@ -788,9 +877,9 @@ paths:
       parameters:
       - schema:
           type: string
-          description: The board id (the `id` returned by `/v1/boards`).
+          description: The board `id`, or its `short_id` — both are returned by `/v1/boards`.
         required: true
-        description: The board id (the `id` returned by `/v1/boards`).
+        description: The board `id`, or its `short_id` — both are returned by `/v1/boards`.
         name: boardID
         in: path
       - schema:
@@ -862,13 +951,10 @@ paths:
   /v1/search:
     get:
       summary: Search Savee's public library
-      description: 'Full-text search across Savee''s public library — not the caller''s own saves. Results
-        include the user who saved each item, since they come from across the platform.
+      description: |-
+        Full-text search across Savee's public library — not the caller's own saves. Results include the user who saved each item, since they come from across the platform.
 
-
-        Search is metered separately from the rest of the API and far more tightly: 20 searches per 5
-        minutes and 200 per week, reported as the `search-burst` and `search-weekly` policies in the `RateLimit`
-        header. Pace against the weekly figure. Requires the `search:read` scope.'
+        Search is metered separately from the rest of the API and far more tightly: 20 searches per 5 minutes and 200 per week, reported as the `search-burst` and `search-weekly` policies in the `RateLimit` header. Pace against the weekly figure. Requires the `search:read` scope.
       tags:
       - Search
       security:

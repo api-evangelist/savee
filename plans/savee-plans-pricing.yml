@@ -1,0 +1,75 @@
+generated: '2026-09-03'
+method: searched
+source: https://savee.com/pricing/
+note: >-
+  Pricing read from the server-rendered plan cards at savee.com/pricing (fetched 2026-09-03).
+  The page defaults to yearly billing; the monthly-billing figures are rendered client-side by
+  a toggle and are not in the served HTML, so only the yearly-billed rates are recorded — the
+  page states "Save $36 on a yearly subscription" for Pro. API and MCP access is an explicit
+  feature of the paid tiers; the free tier exists but does not include API access (the API
+  requires an active subscription, checked on every request, returning 402 PAYMENT_REQUIRED
+  when lapsed).
+plan_count: 4
+currency: USD
+plans:
+- name: Free
+  price: 0
+  currency: USD
+  billing: none
+  api_access: false
+  note: >-
+    Join-for-free membership. The Public API and MCP server both require an active paid
+    subscription (https://docs.savee.com/api/authentication).
+- name: Pro
+  price: 9
+  currency: USD
+  billing: per month, billed yearly
+  api_access: true
+  includes:
+  - Unlimited saves and boards
+  - Private saves and boards
+  - Comments
+  - Right click save to desktop
+  - Personal support from our team
+  - Figma plugin access
+  - API and MCP access
+  - Early access to new features
+  - Collaborative boards
+  - Dropbox backup
+  - 20% discount on Marketplace
+  - Design Course
+- name: Pro & Portfolio
+  price: 15
+  currency: USD
+  billing: per month, billed yearly
+  api_access: true
+  includes:
+  - All Pro features
+  - Create your site in minutes
+  - Exclusive templates
+  - Connect your own domain
+  - API and MCP access
+  - Support from our founder
+  - Dropbox Backup
+  - 20% discount on Marketplace
+  - Design course
+- name: Teams
+  price: 12
+  currency: USD
+  billing: per user/month, billed yearly
+  api_access: true
+  includes:
+  - 2 first users included
+  - $12 / month per extra user
+  - All Pro features
+  - Admin roles
+  - Team customization
+  - Present work to clients
+  - Comments
+  - Better collaboration
+  - Figma integration
+  - 20% discount on Marketplace
+api_quota_note: >-
+  API quotas are not tiered by plan — every active subscription gets the same published limits
+  (see rate-limits/savee-rate-limits.yml); higher limits are by arrangement via hey@savee.com.
+  OAuth app registration is invite-only regardless of plan.
