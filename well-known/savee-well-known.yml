@@ -1,27 +1,25 @@
 generated: '2026-09-03'
 method: probed
 source: live probes of savee.com, www.savee.com, api.savee.com, docs.savee.com and mcp.savee.com
-note: >-
-  Five real documents served. savee.com publishes an RFC 9116 security.txt, RFC 8414 OAuth
-  authorization-server metadata (PKCE S256, dynamic client registration, six scopes including
-  saves:write and boards:write), and an RFC 9727 api-catalog linkset naming both the REST API
-  and the MCP server. mcp.savee.com serves its own authorization-server metadata plus RFC 9728
-  protected-resource metadata pointing at savee.com as the authorization server. www.savee.com
-  mirrors savee.com. api.savee.com and docs.savee.com serve none of the probed documents —
-  their 404s are real (JSON/HTML 404 bodies, no SPA catch-all). No agent card exists on any
-  host at either /.well-known/agent-card.json or the legacy /.well-known/agent.json.
+note: Five real documents served. savee.com publishes an RFC 9116 security.txt, RFC 8414 OAuth authorization-server
+  metadata (PKCE S256, dynamic client registration, six scopes including saves:write and boards:write),
+  and an RFC 9727 api-catalog linkset naming both the REST API and the MCP server. mcp.savee.com serves
+  its own authorization-server metadata plus RFC 9728 protected-resource metadata pointing at savee.com
+  as the authorization server. www.savee.com mirrors savee.com. api.savee.com and docs.savee.com serve
+  none of the probed documents — their 404s are real (JSON/HTML 404 bodies, no SPA catch-all). No agent
+  card exists on any host at either /.well-known/agent-card.json or the legacy /.well-known/agent.json.
 hosts:
 - host: savee.com
   documents:
   - path: /.well-known/security.txt
     status: 200
-    file: well-known/savee-security.txt
+    file: savee-security.txt
   - path: /.well-known/oauth-authorization-server
     status: 200
-    file: well-known/savee-oauth-authorization-server.json
+    file: savee-oauth-authorization-server.json
   - path: /.well-known/api-catalog
     status: 200
-    file: well-known/savee-api-catalog.json
+    file: savee-api-catalog.json
   - path: /.well-known/openid-configuration
     status: 404
   - path: /.well-known/oauth-protected-resource
@@ -101,10 +99,10 @@ hosts:
   documents:
   - path: /.well-known/oauth-authorization-server
     status: 200
-    file: well-known/savee-mcp-oauth-authorization-server.json
+    file: savee-mcp-oauth-authorization-server.json
   - path: /.well-known/oauth-protected-resource
     status: 200
-    file: well-known/savee-mcp-oauth-protected-resource.json
+    file: savee-mcp-oauth-protected-resource.json
   - path: /.well-known/security.txt
     status: 404
   - path: /.well-known/openid-configuration

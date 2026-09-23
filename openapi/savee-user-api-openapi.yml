@@ -10,12 +10,7 @@ info:
   license:
     name: Proprietary — Savee Terms of Service
     url: https://savee.com/terms/
-  description: |-
-    Read-only REST API exposing a Savee user’s own saves, boards, and home feed, plus search over Savee’s public library.
-
-    Authenticate with either a personal access token (`sv_live_…`) generated in your Savee settings, or an OAuth 2.1 access token (`sv_at_…`) obtained on one of your users’ behalf. OAuth tokens are limited to the scopes the user approved; personal tokens carry all of them.
-
-    **Image format** — `media.thumbnail` and `media.original` for image saves are AVIF by default. Clients that cannot decode AVIF should send the request header `Avif-Fallback: 1` to receive JPG URLs instead. Video originals are always MP4.
+  description: Read-only REST API exposing a Savee user’s own saves, boards, and home feed, plus search over Savee’s public library.
 servers:
 - url: https://api.savee.com
 tags:
@@ -73,31 +68,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+      operationId: getV1Me
+      x-operation-id-source: derived
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: sv_live_…
-      description: '**Personal access token** (`sv_live_…`) — represents you and carries every scope,
-        so no scope is required for this call. Best for your own scripts and internal tools. Generate
-        one at https://savee.com/developers/.'
-    OAuth2:
-      type: oauth2
-      description: |-
-        **OAuth access token** (`sv_at_…`) — obtained on one of your users’ behalf and limited to the scopes they approved. Use this when you’re building a product other people sign into with Savee. See https://docs.savee.com/api/oauth.
-
-        Missing the scope below returns `403` with a `WWW-Authenticate: Bearer error="insufficient_scope"` header naming it.
-      flows:
-        authorizationCode:
-          authorizationUrl: https://savee.com/oauth/authorize/
-          tokenUrl: https://savee.com/api/oauth/token/
-          refreshUrl: https://savee.com/api/oauth/token/
-          scopes:
-            profile:read: Read the user’s username, name, and avatar
-            saves:read: Read the user’s saves and home feed
-            boards:read: Read the user’s boards and the saves on them
-            search:read: Search Savee’s public library on the user’s behalf
   schemas:
     ErrorResponse:
       type: object
@@ -159,3 +132,25 @@ components:
       - url
       - avatar_url
       - plan
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: sv_live_…
+      description: '**Personal access token** (`sv_live_…`) — represents you and carries every scope, so no scope is required for this call. Best for your own scripts and internal tools. Generate one at https://savee.com/developers/.'
+    OAuth2:
+      type: oauth2
+      description: '**OAuth access token** (`sv_at_…`) — obtained on one of your users’ behalf and limited to the scopes they approved. Use this when you’re building a product other people sign into with Savee. See https://docs.savee.com/api/oauth.
+
+
+        Missing the scope below returns `403` with a `WWW-Authenticate: Bearer error="insufficient_scope"` header naming it.'
+      flows:
+        authorizationCode:
+          authorizationUrl: https://savee.com/oauth/authorize/
+          tokenUrl: https://savee.com/api/oauth/token/
+          refreshUrl: https://savee.com/api/oauth/token/
+          scopes:
+            profile:read: Read the user’s username, name, and avatar
+            saves:read: Read the user’s saves and home feed
+            boards:read: Read the user’s boards and the saves on them
+            search:read: Search Savee’s public library on the user’s behalf

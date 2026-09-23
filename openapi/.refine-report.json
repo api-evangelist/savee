@@ -1,7 +1,7 @@
 {
   "provider": "savee",
   "sources": [
-    "savee-public-api-openapi.yml"
+    "_original/savee-openapi.json"
   ],
   "outputs": [
     "savee-boards-api-openapi.yml",
@@ -10,19 +10,26 @@
     "savee-system-api-openapi.yml",
     "savee-user-api-openapi.yml"
   ],
-  "archived": [
-    "archived openapi/savee-public-api-openapi.yml"
-  ],
+  "archived": [],
   "errors": [],
   "warnings": [],
   "notes": [
-    "savee-public-api-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
-    "savee-public-api-openapi.yml: declared missing tag: Boards",
-    "savee-public-api-openapi.yml: declared missing tag: Saves",
-    "savee-public-api-openapi.yml: declared missing tag: Search",
-    "savee-public-api-openapi.yml: declared missing tag: System",
-    "savee-public-api-openapi.yml: declared missing tag: User",
-    "apis.yml register: written (+5 apis, 5 total)"
+    "1 archived document(s) dropped as subsets of other archived documents",
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "savee-openapi.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "savee-openapi.json: declared missing tag: Boards",
+    "savee-openapi.json: declared missing tag: Saves",
+    "savee-openapi.json: declared missing tag: Search",
+    "savee-openapi.json: declared missing tag: System",
+    "savee-openapi.json: declared missing tag: User",
+    "apis.yml register: already-registered"
   ],
-  "skipped": []
+  "skipped": [
+    "_original/savee-public-api-openapi.yml: archived document superseded by a larger archived document",
+    "savee-boards-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "savee-saves-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "savee-search-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "savee-system-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "savee-user-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }

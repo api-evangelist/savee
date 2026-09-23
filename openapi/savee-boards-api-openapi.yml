@@ -10,12 +10,7 @@ info:
   license:
     name: Proprietary — Savee Terms of Service
     url: https://savee.com/terms/
-  description: |-
-    Read-only REST API exposing a Savee user’s own saves, boards, and home feed, plus search over Savee’s public library.
-
-    Authenticate with either a personal access token (`sv_live_…`) generated in your Savee settings, or an OAuth 2.1 access token (`sv_at_…`) obtained on one of your users’ behalf. OAuth tokens are limited to the scopes the user approved; personal tokens carry all of them.
-
-    **Image format** — `media.thumbnail` and `media.original` for image saves are AVIF by default. Clients that cannot decode AVIF should send the request header `Avif-Fallback: 1` to receive JPG URLs instead. Video originals are always MP4.
+  description: Read-only REST API exposing a Savee user’s own saves, boards, and home feed, plus search over Savee’s public library.
 servers:
 - url: https://api.savee.com
 tags:
@@ -24,12 +19,7 @@ paths:
   /v1/boards:
     get:
       summary: List the authenticated user's boards
-      description: 'Returns every board the caller can see as a tree in a single response (not paginated):
-        personal boards they own, boards they collaborate on, and boards from any Savee Teams workspace
-        they''re a member of. Only top-level boards appear at the root of `data`; a board''s children
-        are nested under its `sub_boards` array (single-level, so each sub-board is a leaf). Use the `ownership_type`
-        field on each board to tell user-owned boards apart from team boards. The order at every level
-        follows the caller''s chosen boards-sort preference on savee.com.'
+      description: 'Returns every board the caller can see as a tree in a single response (not paginated): personal boards they own, boards they collaborate on, and boards from any Savee Teams workspace they''re a member of. Only top-level boards appear at the root of `data`; a board''s children are nested under its `sub_boards` array (single-level, so each sub-board is a leaf). Use the `ownership_type` field on each board to tell user-owned boards apart from team boards. The order at every level follows the caller''s chosen boards-sort preference on savee.com.'
       tags:
       - Boards
       security:
@@ -79,15 +69,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+      operationId: getV1Boards
+      x-operation-id-source: derived
   /v1/boards/{boardID}:
     get:
       summary: Get a single board
-      description: '`boardID` is either the board `id` or the `short_id` returned by `/v1/boards`; both
-        are accepted and both are stable across renames. Returns the board with its child boards nested
-        under `sub_boards` — the same shape as a node in the `/v1/boards` tree — so there is no separate
-        sub-boards endpoint. Accessible by any user with a role on the board (owner, admin, editor, viewer)
-        and by team members for team-owned boards. Returns 404 when the board does not exist or the caller
-        has no role on it — the API does not confirm whether someone else’s board exists.'
+      description: '`boardID` is either the board `id` or the `short_id` returned by `/v1/boards`; both are accepted and both are stable across renames. Returns the board with its child boards nested under `sub_boards` — the same shape as a node in the `/v1/boards` tree — so there is no separate sub-boards endpoint. Accessible by any user with a role on the board (owner, admin, editor, viewer) and by team members for team-owned boards. Returns 404 when the board does not exist or the caller has no role on it — the API does not confirm whether someone else’s board exists.'
       tags:
       - Boards
       security:
@@ -151,16 +138,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+      operationId: getV1BoardsByBoardID
+      x-operation-id-source: derived
   /v1/boards/{boardID}/saves:
     get:
       summary: List saves on a specific board
-      description: '`boardID` is either the board `id` or the `short_id` returned by `/v1/boards`; both
-        are accepted. Accessible by any user with a role on the board (owner, admin, editor, viewer) and
-        by team members for team-owned boards. Returns 404 when the board does not exist or the caller
-        has no role on it — the API does not confirm whether someone else’s board exists.'
+      description: '`boardID` is either the board `id` or the `short_id` returned by `/v1/boards`; both are accepted. Accessible by any user with a role on the board (owner, admin, editor, viewer) and by team members for team-owned boards. Returns 404 when the board does not exist or the caller has no role on it — the API does not confirm whether someone else’s board exists.'
       tags:
       - Boards
-      - Saves
       security:
       - BearerAuth: []
       - OAuth2:
@@ -185,8 +170,7 @@ paths:
         in: query
       - schema:
           type: string
-          description: Opaque cursor returned in `next_cursor` from the previous page. Pass it through
-            verbatim — the encoding is an implementation detail and may change.
+          description: Opaque cursor returned in `next_cursor` from the previous page. Pass it through verbatim — the encoding is an implementation detail and may change.
           example: eyJjIjoiMjAyNi0wNS0wOFQxMjowMDowMFoiLCJpIjoiNjdhYWRhMjAifQ
         required: false
         name: cursor
@@ -240,44 +224,204 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+      operationId: getV1BoardsByBoardIDSaves
+      x-operation-id-source: derived
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: sv_live_…
-      description: '**Personal access token** (`sv_live_…`) — represents you and carries every scope,
-        so no scope is required for this call. Best for your own scripts and internal tools. Generate
-        one at https://savee.com/developers/.'
-    OAuth2:
-      type: oauth2
-      description: |-
-        **OAuth access token** (`sv_at_…`) — obtained on one of your users’ behalf and limited to the scopes they approved. Use this when you’re building a product other people sign into with Savee. See https://docs.savee.com/api/oauth.
-
-        Missing the scope below returns `403` with a `WWW-Authenticate: Bearer error="insufficient_scope"` header naming it.
-      flows:
-        authorizationCode:
-          authorizationUrl: https://savee.com/oauth/authorize/
-          tokenUrl: https://savee.com/api/oauth/token/
-          refreshUrl: https://savee.com/api/oauth/token/
-          scopes:
-            profile:read: Read the user’s username, name, and avatar
-            saves:read: Read the user’s saves and home feed
-            boards:read: Read the user’s boards and the saves on them
-            search:read: Search Savee’s public library on the user’s behalf
   schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: User identifier. Stable across renames; safe to store as a foreign key on the caller’s side.
+          example: 63e1a4c2d242ec00094007f1
+        username:
+          type: string
+          description: Current username. May change if the user renames.
+          example: aliceb
+        name:
+          type: string
+          example: Alice Bauer
+        url:
+          type: string
+          format: uri
+          example: https://savee.com/aliceb/
+        avatar_url:
+          type: string
+          format: uri
+          example: https://dm.savee.com/user-avatar/original/8kQ2mZp.jpg
+      required:
+      - id
+      - username
+      - name
+      - url
+      - avatar_url
+      description: The user who created this save. Omitted on /v1/saves (the caller is implicitly the author); present on /v1/feed and /v1/boards/{id}/saves where the author may differ from the caller.
+    SaveMedia:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - image
+          - video
+          example: image
+        width:
+          type: integer
+          minimum: 0
+          example: 1600
+        height:
+          type: integer
+          minimum: 0
+          example: 2400
+        thumbnail:
+          type: string
+          format: uri
+          description: 'Grid-sized preview (~420px wide). AVIF by default; clients that cannot decode AVIF should send `Avif-Fallback: 1` to receive JPG. Applies to both image and video assets (videos return a JPG/AVIF poster frame).'
+          example: https://dm.savee.com/asset_image/w420/6r4nDqE.avif
+        original:
+          type: string
+          format: uri
+          description: 'Full-quality asset. Image: AVIF by default (JPG with `Avif-Fallback: 1`). Video: MP4.'
+          example: https://dm.savee.com/asset_image/original/6r4nDqE.avif
+      required:
+      - type
+      - width
+      - height
+      - thumbnail
+      - original
+    SavesPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Save'
+        next_cursor:
+          type:
+          - string
+          - 'null'
+          description: Pass as `cursor` to fetch the next page. `null` on the last page.
+          example: eyJjIjoiMjAyNi0wNS0wOFQxMjowMDowMFoiLCJpIjoiNjdhYWRhMjAifQ
+        has_more:
+          type: boolean
+          description: Whether another page is available. Keep paging while this is `true`.
+          example: true
+      required:
+      - data
+      - next_cursor
+      - has_more
+    BoardsList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Board'
+      required:
+      - data
+    SaveColor:
+      type: object
+      properties:
+        color:
+          type: string
+          pattern: ^#[0-9A-F]{6}$
+          description: Hex color code, e.g. `#1A2B3C`.
+          example: '#1A1A1A'
+        amount:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Fraction of the media covered by this color (0–1).
+          example: 0.62
+      required:
+      - color
+      - amount
+    BoardResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Board'
+      required:
+      - data
+    SubBoard:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Board identifier. Stable across renames and slug changes; safe to store as a foreign key on the caller’s side.
+        short_id:
+          type: string
+          description: The board’s short identifier. Also stable across renames and slug changes, and accepted anywhere `boardID` is.
+        name:
+          type: string
+        slug:
+          type: string
+        url:
+          type: string
+          format: uri
+          description: Canonical page on savee.com for this board (uses the current slug).
+        is_private:
+          type: boolean
+        saves_count:
+          type: integer
+          minimum: 0
+        created_at:
+          type: string
+          format: date-time
+        og_image:
+          type:
+          - string
+          - 'null'
+          format: uri
+        ownership_type:
+          type: string
+          enum:
+          - team
+          - user
+          description: '`user` if the board belongs to a person (the caller, or someone who''s added the caller as a collaborator); `team` if it belongs to a Savee Teams workspace the caller is a member of.'
+        sub_boards:
+          type: array
+          description: Always empty — sub-boards do not nest further (nesting is single-level).
+          items: {}
+          maxItems: 0
+      required:
+      - id
+      - short_id
+      - name
+      - slug
+      - url
+      - is_private
+      - saves_count
+      - created_at
+      - og_image
+      - ownership_type
+      - sub_boards
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+          required:
+          - code
+          - message
+      required:
+      - error
     Board:
       type: object
       properties:
         id:
           type: string
-          description: Board identifier. Stable across renames and slug changes; safe to store as a foreign
-            key on the caller’s side.
+          description: Board identifier. Stable across renames and slug changes; safe to store as a foreign key on the caller’s side.
           example: 69fbaf96d242ec48009df59a
         short_id:
           type: string
-          description: The board’s short identifier. Also stable across renames and slug changes, and
-            accepted anywhere `boardID` is.
+          description: The board’s short identifier. Also stable across renames and slug changes, and accepted anywhere `boardID` is.
           example: Lp9wQ2s
         name:
           type: string
@@ -313,16 +457,13 @@ components:
           enum:
           - team
           - user
-          description: '`user` if the board belongs to a person (the caller, or someone who''s added the
-            caller as a collaborator); `team` if it belongs to a Savee Teams workspace the caller is a
-            member of.'
+          description: '`user` if the board belongs to a person (the caller, or someone who''s added the caller as a collaborator); `team` if it belongs to a Savee Teams workspace the caller is a member of.'
           example: user
         sub_boards:
           type: array
           items:
             $ref: '#/components/schemas/SubBoard'
-          description: Child boards nested one level under this board, ordered by the same boards-sort
-            preference as the top level.
+          description: Child boards nested one level under this board, ordered by the same boards-sort preference as the top level.
       required:
       - id
       - short_id
@@ -335,50 +476,16 @@ components:
       - og_image
       - ownership_type
       - sub_boards
-    BoardResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/Board'
-      required:
-      - data
-    BoardsList:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Board'
-      required:
-      - data
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            code:
-              type: string
-            message:
-              type: string
-          required:
-          - code
-          - message
-      required:
-      - error
     Save:
       type: object
       properties:
         id:
           type: string
-          description: Save identifier. Stable across renames; safe to store as a foreign key on the caller’s
-            side.
+          description: Save identifier. Stable across renames; safe to store as a foreign key on the caller’s side.
           example: 67aada20d242ec0009400825
         short_id:
           type: string
-          description: The save’s short identifier — the segment in its savee.com URL (`savee.com/i/{short_id}/`).
-            Also stable across renames. Accepted anywhere `saveID` is, so a savee.com link can be turned
-            into an API call without a lookup step.
+          description: The save’s short identifier — the segment in its savee.com URL (`savee.com/i/{short_id}/`). Also stable across renames. Accepted anywhere `saveID` is, so a savee.com link can be turned into an API call without a lookup step.
           example: UXb_bvc
         url:
           type: string
@@ -400,8 +507,7 @@ components:
           example: '2026-05-08T12:00:00.000Z'
         is_private:
           type: boolean
-          description: Whether the save itself is marked private. This is a property of the save, independent
-            of whether it also sits in a private board.
+          description: Whether the save itself is marked private. This is a property of the save, independent of whether it also sits in a private board.
           example: false
         total_saves:
           type: integer
@@ -414,8 +520,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SaveColor'
-          description: Dominant colors of the media, most prominent first. Empty when colors have not
-            been extracted for this save (e.g. shortly after saving).
+          description: Dominant colors of the media, most prominent first. Empty when colors have not been extracted for this save (e.g. shortly after saving).
         user:
           $ref: '#/components/schemas/User'
       required:
@@ -429,165 +534,25 @@ components:
       - total_saves
       - media
       - colors
-    SaveColor:
-      type: object
-      properties:
-        color:
-          type: string
-          pattern: ^#[0-9A-F]{6}$
-          description: Hex color code, e.g. `#1A2B3C`.
-          example: '#1A1A1A'
-        amount:
-          type: number
-          minimum: 0
-          maximum: 1
-          description: Fraction of the media covered by this color (0–1).
-          example: 0.62
-      required:
-      - color
-      - amount
-    SaveMedia:
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - image
-          - video
-          example: image
-        width:
-          type: integer
-          minimum: 0
-          example: 1600
-        height:
-          type: integer
-          minimum: 0
-          example: 2400
-        thumbnail:
-          type: string
-          format: uri
-          description: 'Grid-sized preview (~420px wide). AVIF by default; clients that cannot decode
-            AVIF should send `Avif-Fallback: 1` to receive JPG. Applies to both image and video assets
-            (videos return a JPG/AVIF poster frame).'
-          example: https://dm.savee.com/asset_image/w420/6r4nDqE.avif
-        original:
-          type: string
-          format: uri
-          description: 'Full-quality asset. Image: AVIF by default (JPG with `Avif-Fallback: 1`). Video:
-            MP4.'
-          example: https://dm.savee.com/asset_image/original/6r4nDqE.avif
-      required:
-      - type
-      - width
-      - height
-      - thumbnail
-      - original
-    SavesPage:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Save'
-        next_cursor:
-          type:
-          - string
-          - 'null'
-          description: Pass as `cursor` to fetch the next page. `null` on the last page.
-          example: eyJjIjoiMjAyNi0wNS0wOFQxMjowMDowMFoiLCJpIjoiNjdhYWRhMjAifQ
-        has_more:
-          type: boolean
-          description: Whether another page is available. Keep paging while this is `true`.
-          example: true
-      required:
-      - data
-      - next_cursor
-      - has_more
-    SubBoard:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Board identifier. Stable across renames and slug changes; safe to store as a foreign
-            key on the caller’s side.
-        short_id:
-          type: string
-          description: The board’s short identifier. Also stable across renames and slug changes, and
-            accepted anywhere `boardID` is.
-        name:
-          type: string
-        slug:
-          type: string
-        url:
-          type: string
-          format: uri
-          description: Canonical page on savee.com for this board (uses the current slug).
-        is_private:
-          type: boolean
-        saves_count:
-          type: integer
-          minimum: 0
-        created_at:
-          type: string
-          format: date-time
-        og_image:
-          type:
-          - string
-          - 'null'
-          format: uri
-        ownership_type:
-          type: string
-          enum:
-          - team
-          - user
-          description: '`user` if the board belongs to a person (the caller, or someone who''s added the
-            caller as a collaborator); `team` if it belongs to a Savee Teams workspace the caller is a
-            member of.'
-        sub_boards:
-          type: array
-          description: Always empty — sub-boards do not nest further (nesting is single-level).
-          items: {}
-          maxItems: 0
-      required:
-      - id
-      - short_id
-      - name
-      - slug
-      - url
-      - is_private
-      - saves_count
-      - created_at
-      - og_image
-      - ownership_type
-      - sub_boards
-    User:
-      type: object
-      properties:
-        id:
-          type: string
-          description: User identifier. Stable across renames; safe to store as a foreign key on the caller’s
-            side.
-          example: 63e1a4c2d242ec00094007f1
-        username:
-          type: string
-          description: Current username. May change if the user renames.
-          example: aliceb
-        name:
-          type: string
-          example: Alice Bauer
-        url:
-          type: string
-          format: uri
-          example: https://savee.com/aliceb/
-        avatar_url:
-          type: string
-          format: uri
-          example: https://dm.savee.com/user-avatar/original/8kQ2mZp.jpg
-      required:
-      - id
-      - username
-      - name
-      - url
-      - avatar_url
-      description: The user who created this save. Omitted on /v1/saves (the caller is implicitly the
-        author); present on /v1/feed and /v1/boards/{id}/saves where the author may differ from the caller.
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: sv_live_…
+      description: '**Personal access token** (`sv_live_…`) — represents you and carries every scope, so no scope is required for this call. Best for your own scripts and internal tools. Generate one at https://savee.com/developers/.'
+    OAuth2:
+      type: oauth2
+      description: '**OAuth access token** (`sv_at_…`) — obtained on one of your users’ behalf and limited to the scopes they approved. Use this when you’re building a product other people sign into with Savee. See https://docs.savee.com/api/oauth.
+
+
+        Missing the scope below returns `403` with a `WWW-Authenticate: Bearer error="insufficient_scope"` header naming it.'
+      flows:
+        authorizationCode:
+          authorizationUrl: https://savee.com/oauth/authorize/
+          tokenUrl: https://savee.com/api/oauth/token/
+          refreshUrl: https://savee.com/api/oauth/token/
+          scopes:
+            profile:read: Read the user’s username, name, and avatar
+            saves:read: Read the user’s saves and home feed
+            boards:read: Read the user’s boards and the saves on them
+            search:read: Search Savee’s public library on the user’s behalf

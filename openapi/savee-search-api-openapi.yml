@@ -10,12 +10,7 @@ info:
   license:
     name: Proprietary — Savee Terms of Service
     url: https://savee.com/terms/
-  description: |-
-    Read-only REST API exposing a Savee user’s own saves, boards, and home feed, plus search over Savee’s public library.
-
-    Authenticate with either a personal access token (`sv_live_…`) generated in your Savee settings, or an OAuth 2.1 access token (`sv_at_…`) obtained on one of your users’ behalf. OAuth tokens are limited to the scopes the user approved; personal tokens carry all of them.
-
-    **Image format** — `media.thumbnail` and `media.original` for image saves are AVIF by default. Clients that cannot decode AVIF should send the request header `Avif-Fallback: 1` to receive JPG URLs instead. Video originals are always MP4.
+  description: Read-only REST API exposing a Savee user’s own saves, boards, and home feed, plus search over Savee’s public library.
 servers:
 - url: https://api.savee.com
 tags:
@@ -24,10 +19,10 @@ paths:
   /v1/search:
     get:
       summary: Search Savee's public library
-      description: |-
-        Full-text search across Savee's public library — not the caller's own saves. Results include the user who saved each item, since they come from across the platform.
+      description: 'Full-text search across Savee''s public library — not the caller''s own saves. Results include the user who saved each item, since they come from across the platform.
 
-        Search is metered separately from the rest of the API and far more tightly: 20 searches per 5 minutes and 200 per week, reported as the `search-burst` and `search-weekly` policies in the `RateLimit` header. Pace against the weekly figure. Requires the `search:read` scope.
+
+        Search is metered separately from the rest of the API and far more tightly: 20 searches per 5 minutes and 200 per week, reported as the `search-burst` and `search-weekly` policies in the `RateLimit` header. Pace against the weekly figure. Requires the `search:read` scope.'
       tags:
       - Search
       security:
@@ -46,8 +41,7 @@ paths:
         in: query
       - schema:
           type: string
-          description: Opaque cursor returned in `next_cursor` from the previous page. Pass it through
-            verbatim — the encoding is an implementation detail and may change.
+          description: Opaque cursor returned in `next_cursor` from the previous page. Pass it through verbatim — the encoding is an implementation detail and may change.
           example: eyJjIjoiMjAyNi0wNS0wOFQxMjowMDowMFoiLCJpIjoiNjdhYWRhMjAifQ
         required: false
         name: cursor
@@ -104,127 +98,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+      operationId: getV1Search
+      x-operation-id-source: derived
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: sv_live_…
-      description: '**Personal access token** (`sv_live_…`) — represents you and carries every scope,
-        so no scope is required for this call. Best for your own scripts and internal tools. Generate
-        one at https://savee.com/developers/.'
-    OAuth2:
-      type: oauth2
-      description: |-
-        **OAuth access token** (`sv_at_…`) — obtained on one of your users’ behalf and limited to the scopes they approved. Use this when you’re building a product other people sign into with Savee. See https://docs.savee.com/api/oauth.
-
-        Missing the scope below returns `403` with a `WWW-Authenticate: Bearer error="insufficient_scope"` header naming it.
-      flows:
-        authorizationCode:
-          authorizationUrl: https://savee.com/oauth/authorize/
-          tokenUrl: https://savee.com/api/oauth/token/
-          refreshUrl: https://savee.com/api/oauth/token/
-          scopes:
-            profile:read: Read the user’s username, name, and avatar
-            saves:read: Read the user’s saves and home feed
-            boards:read: Read the user’s boards and the saves on them
-            search:read: Search Savee’s public library on the user’s behalf
   schemas:
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            code:
-              type: string
-            message:
-              type: string
-          required:
-          - code
-          - message
-      required:
-      - error
-    Save:
+    User:
       type: object
       properties:
         id:
           type: string
-          description: Save identifier. Stable across renames; safe to store as a foreign key on the caller’s
-            side.
-          example: 67aada20d242ec0009400825
-        short_id:
+          description: User identifier. Stable across renames; safe to store as a foreign key on the caller’s side.
+          example: 63e1a4c2d242ec00094007f1
+        username:
           type: string
-          description: The save’s short identifier — the segment in its savee.com URL (`savee.com/i/{short_id}/`).
-            Also stable across renames. Accepted anywhere `saveID` is, so a savee.com link can be turned
-            into an API call without a lookup step.
-          example: UXb_bvc
+          description: Current username. May change if the user renames.
+          example: aliceb
+        name:
+          type: string
+          example: Alice Bauer
         url:
           type: string
           format: uri
-          description: Canonical page on savee.com for this save.
-          example: https://savee.com/i/UXb_bvc/
-        name:
+          example: https://savee.com/aliceb/
+        avatar_url:
           type: string
-          example: Brutalist poster
-        source_url:
-          type:
-          - string
-          - 'null'
-          description: Where the save was originally taken from. `null` if unknown.
-          example: https://example.com/poster
-        created_at:
-          type: string
-          format: date-time
-          example: '2026-05-08T12:00:00.000Z'
-        is_private:
-          type: boolean
-          description: Whether the save itself is marked private. This is a property of the save, independent
-            of whether it also sits in a private board.
-          example: false
-        total_saves:
-          type: integer
-          minimum: 0
-          description: How many users across Savee have saved this same asset.
-          example: 42
-        media:
-          $ref: '#/components/schemas/SaveMedia'
-        colors:
-          type: array
-          items:
-            $ref: '#/components/schemas/SaveColor'
-          description: Dominant colors of the media, most prominent first. Empty when colors have not
-            been extracted for this save (e.g. shortly after saving).
-        user:
-          $ref: '#/components/schemas/User'
+          format: uri
+          example: https://dm.savee.com/user-avatar/original/8kQ2mZp.jpg
       required:
       - id
-      - short_id
-      - url
+      - username
       - name
-      - source_url
-      - created_at
-      - is_private
-      - total_saves
-      - media
-      - colors
-    SaveColor:
-      type: object
-      properties:
-        color:
-          type: string
-          pattern: ^#[0-9A-F]{6}$
-          description: Hex color code, e.g. `#1A2B3C`.
-          example: '#1A1A1A'
-        amount:
-          type: number
-          minimum: 0
-          maximum: 1
-          description: Fraction of the media covered by this color (0–1).
-          example: 0.62
-      required:
-      - color
-      - amount
+      - url
+      - avatar_url
+      description: The user who created this save. Omitted on /v1/saves (the caller is implicitly the author); present on /v1/feed and /v1/boards/{id}/saves where the author may differ from the caller.
     SaveMedia:
       type: object
       properties:
@@ -245,15 +151,12 @@ components:
         thumbnail:
           type: string
           format: uri
-          description: 'Grid-sized preview (~420px wide). AVIF by default; clients that cannot decode
-            AVIF should send `Avif-Fallback: 1` to receive JPG. Applies to both image and video assets
-            (videos return a JPG/AVIF poster frame).'
+          description: 'Grid-sized preview (~420px wide). AVIF by default; clients that cannot decode AVIF should send `Avif-Fallback: 1` to receive JPG. Applies to both image and video assets (videos return a JPG/AVIF poster frame).'
           example: https://dm.savee.com/asset_image/w420/6r4nDqE.avif
         original:
           type: string
           format: uri
-          description: 'Full-quality asset. Image: AVIF by default (JPG with `Avif-Fallback: 1`). Video:
-            MP4.'
+          description: 'Full-quality asset. Image: AVIF by default (JPG with `Avif-Fallback: 1`). Video: MP4.'
           example: https://dm.savee.com/asset_image/original/6r4nDqE.avif
       required:
       - type
@@ -282,34 +185,115 @@ components:
       - data
       - next_cursor
       - has_more
-    User:
+    SaveColor:
+      type: object
+      properties:
+        color:
+          type: string
+          pattern: ^#[0-9A-F]{6}$
+          description: Hex color code, e.g. `#1A2B3C`.
+          example: '#1A1A1A'
+        amount:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Fraction of the media covered by this color (0–1).
+          example: 0.62
+      required:
+      - color
+      - amount
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+          required:
+          - code
+          - message
+      required:
+      - error
+    Save:
       type: object
       properties:
         id:
           type: string
-          description: User identifier. Stable across renames; safe to store as a foreign key on the caller’s
-            side.
-          example: 63e1a4c2d242ec00094007f1
-        username:
+          description: Save identifier. Stable across renames; safe to store as a foreign key on the caller’s side.
+          example: 67aada20d242ec0009400825
+        short_id:
           type: string
-          description: Current username. May change if the user renames.
-          example: aliceb
-        name:
-          type: string
-          example: Alice Bauer
+          description: The save’s short identifier — the segment in its savee.com URL (`savee.com/i/{short_id}/`). Also stable across renames. Accepted anywhere `saveID` is, so a savee.com link can be turned into an API call without a lookup step.
+          example: UXb_bvc
         url:
           type: string
           format: uri
-          example: https://savee.com/aliceb/
-        avatar_url:
+          description: Canonical page on savee.com for this save.
+          example: https://savee.com/i/UXb_bvc/
+        name:
           type: string
-          format: uri
-          example: https://dm.savee.com/user-avatar/original/8kQ2mZp.jpg
+          example: Brutalist poster
+        source_url:
+          type:
+          - string
+          - 'null'
+          description: Where the save was originally taken from. `null` if unknown.
+          example: https://example.com/poster
+        created_at:
+          type: string
+          format: date-time
+          example: '2026-05-08T12:00:00.000Z'
+        is_private:
+          type: boolean
+          description: Whether the save itself is marked private. This is a property of the save, independent of whether it also sits in a private board.
+          example: false
+        total_saves:
+          type: integer
+          minimum: 0
+          description: How many users across Savee have saved this same asset.
+          example: 42
+        media:
+          $ref: '#/components/schemas/SaveMedia'
+        colors:
+          type: array
+          items:
+            $ref: '#/components/schemas/SaveColor'
+          description: Dominant colors of the media, most prominent first. Empty when colors have not been extracted for this save (e.g. shortly after saving).
+        user:
+          $ref: '#/components/schemas/User'
       required:
       - id
-      - username
-      - name
+      - short_id
       - url
-      - avatar_url
-      description: The user who created this save. Omitted on /v1/saves (the caller is implicitly the
-        author); present on /v1/feed and /v1/boards/{id}/saves where the author may differ from the caller.
+      - name
+      - source_url
+      - created_at
+      - is_private
+      - total_saves
+      - media
+      - colors
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: sv_live_…
+      description: '**Personal access token** (`sv_live_…`) — represents you and carries every scope, so no scope is required for this call. Best for your own scripts and internal tools. Generate one at https://savee.com/developers/.'
+    OAuth2:
+      type: oauth2
+      description: '**OAuth access token** (`sv_at_…`) — obtained on one of your users’ behalf and limited to the scopes they approved. Use this when you’re building a product other people sign into with Savee. See https://docs.savee.com/api/oauth.
+
+
+        Missing the scope below returns `403` with a `WWW-Authenticate: Bearer error="insufficient_scope"` header naming it.'
+      flows:
+        authorizationCode:
+          authorizationUrl: https://savee.com/oauth/authorize/
+          tokenUrl: https://savee.com/api/oauth/token/
+          refreshUrl: https://savee.com/api/oauth/token/
+          scopes:
+            profile:read: Read the user’s username, name, and avatar
+            saves:read: Read the user’s saves and home feed
+            boards:read: Read the user’s boards and the saves on them
+            search:read: Search Savee’s public library on the user’s behalf
