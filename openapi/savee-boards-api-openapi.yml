@@ -228,35 +228,73 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    User:
+    BoardsList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Board'
+      required:
+      - data
+    Save:
       type: object
       properties:
         id:
           type: string
-          description: User identifier. Stable across renames; safe to store as a foreign key on the caller’s side.
-          example: 63e1a4c2d242ec00094007f1
-        username:
+          description: Save identifier. Stable across renames; safe to store as a foreign key on the caller’s side.
+          example: 67aada20d242ec0009400825
+        short_id:
           type: string
-          description: Current username. May change if the user renames.
-          example: aliceb
-        name:
-          type: string
-          example: Alice Bauer
+          description: The save’s short identifier — the segment in its savee.com URL (`savee.com/i/{short_id}/`). Also stable across renames. Accepted anywhere `saveID` is, so a savee.com link can be turned into an API call without a lookup step.
+          example: UXb_bvc
         url:
           type: string
           format: uri
-          example: https://savee.com/aliceb/
-        avatar_url:
+          description: Canonical page on savee.com for this save.
+          example: https://savee.com/i/UXb_bvc/
+        name:
           type: string
-          format: uri
-          example: https://dm.savee.com/user-avatar/original/8kQ2mZp.jpg
+          example: Brutalist poster
+        source_url:
+          type:
+          - string
+          - 'null'
+          description: Where the save was originally taken from. `null` if unknown.
+          example: https://example.com/poster
+        created_at:
+          type: string
+          format: date-time
+          example: '2026-05-08T12:00:00.000Z'
+        is_private:
+          type: boolean
+          description: Whether the save itself is marked private. This is a property of the save, independent of whether it also sits in a private board.
+          example: false
+        total_saves:
+          type: integer
+          minimum: 0
+          description: How many users across Savee have saved this same asset.
+          example: 42
+        media:
+          $ref: '#/components/schemas/SaveMedia'
+        colors:
+          type: array
+          items:
+            $ref: '#/components/schemas/SaveColor'
+          description: Dominant colors of the media, most prominent first. Empty when colors have not been extracted for this save (e.g. shortly after saving).
+        user:
+          $ref: '#/components/schemas/User'
       required:
       - id
-      - username
-      - name
+      - short_id
       - url
-      - avatar_url
-      description: The user who created this save. Omitted on /v1/saves (the caller is implicitly the author); present on /v1/feed and /v1/boards/{id}/saves where the author may differ from the caller.
+      - name
+      - source_url
+      - created_at
+      - is_private
+      - total_saves
+      - media
+      - colors
     SaveMedia:
       type: object
       properties:
@@ -290,53 +328,35 @@ components:
       - height
       - thumbnail
       - original
-    SavesPage:
+    User:
       type: object
       properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Save'
-        next_cursor:
-          type:
-          - string
-          - 'null'
-          description: Pass as `cursor` to fetch the next page. `null` on the last page.
-          example: eyJjIjoiMjAyNi0wNS0wOFQxMjowMDowMFoiLCJpIjoiNjdhYWRhMjAifQ
-        has_more:
-          type: boolean
-          description: Whether another page is available. Keep paging while this is `true`.
-          example: true
-      required:
-      - data
-      - next_cursor
-      - has_more
-    BoardsList:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Board'
-      required:
-      - data
-    SaveColor:
-      type: object
-      properties:
-        color:
+        id:
           type: string
-          pattern: ^#[0-9A-F]{6}$
-          description: Hex color code, e.g. `#1A2B3C`.
-          example: '#1A1A1A'
-        amount:
-          type: number
-          minimum: 0
-          maximum: 1
-          description: Fraction of the media covered by this color (0–1).
-          example: 0.62
+          description: User identifier. Stable across renames; safe to store as a foreign key on the caller’s side.
+          example: 63e1a4c2d242ec00094007f1
+        username:
+          type: string
+          description: Current username. May change if the user renames.
+          example: aliceb
+        name:
+          type: string
+          example: Alice Bauer
+        url:
+          type: string
+          format: uri
+          example: https://savee.com/aliceb/
+        avatar_url:
+          type: string
+          format: uri
+          example: https://dm.savee.com/user-avatar/original/8kQ2mZp.jpg
       required:
-      - color
-      - amount
+      - id
+      - username
+      - name
+      - url
+      - avatar_url
+      description: The user who created this save. Omitted on /v1/saves (the caller is implicitly the author); present on /v1/feed and /v1/boards/{id}/saves where the author may differ from the caller.
     BoardResponse:
       type: object
       properties:
@@ -344,6 +364,70 @@ components:
           $ref: '#/components/schemas/Board'
       required:
       - data
+    Board:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Board identifier. Stable across renames and slug changes; safe to store as a foreign key on the caller’s side.
+          example: 69fbaf96d242ec48009df59a
+        short_id:
+          type: string
+          description: The board’s short identifier. Also stable across renames and slug changes, and accepted anywhere `boardID` is.
+          example: Lp9wQ2s
+        name:
+          type: string
+          example: Posters
+        slug:
+          type: string
+          example: posters
+        url:
+          type: string
+          format: uri
+          description: Canonical page on savee.com for this board (uses the current slug).
+          example: https://savee.com/aliceb/posters/
+        is_private:
+          type: boolean
+          example: false
+        saves_count:
+          type: integer
+          minimum: 0
+          example: 128
+        created_at:
+          type: string
+          format: date-time
+          example: '2026-04-01T09:00:00.000Z'
+        og_image:
+          type:
+          - string
+          - 'null'
+          format: uri
+          description: Share image for the board. `null` if one has not been generated yet.
+          example: https://dm.savee.com/board-og/original/Lp9wQ2s.jpg
+        ownership_type:
+          type: string
+          enum:
+          - team
+          - user
+          description: '`user` if the board belongs to a person (the caller, or someone who''s added the caller as a collaborator); `team` if it belongs to a Savee Teams workspace the caller is a member of.'
+          example: user
+        sub_boards:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubBoard'
+          description: Child boards nested one level under this board, ordered by the same boards-sort preference as the top level.
+      required:
+      - id
+      - short_id
+      - name
+      - slug
+      - url
+      - is_private
+      - saves_count
+      - created_at
+      - og_image
+      - ownership_type
+      - sub_boards
     SubBoard:
       type: object
       properties:
@@ -412,128 +496,44 @@ components:
           - message
       required:
       - error
-    Board:
+    SavesPage:
       type: object
       properties:
-        id:
-          type: string
-          description: Board identifier. Stable across renames and slug changes; safe to store as a foreign key on the caller’s side.
-          example: 69fbaf96d242ec48009df59a
-        short_id:
-          type: string
-          description: The board’s short identifier. Also stable across renames and slug changes, and accepted anywhere `boardID` is.
-          example: Lp9wQ2s
-        name:
-          type: string
-          example: Posters
-        slug:
-          type: string
-          example: posters
-        url:
-          type: string
-          format: uri
-          description: Canonical page on savee.com for this board (uses the current slug).
-          example: https://savee.com/aliceb/posters/
-        is_private:
-          type: boolean
-          example: false
-        saves_count:
-          type: integer
-          minimum: 0
-          example: 128
-        created_at:
-          type: string
-          format: date-time
-          example: '2026-04-01T09:00:00.000Z'
-        og_image:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Save'
+        next_cursor:
           type:
           - string
           - 'null'
-          format: uri
-          description: Share image for the board. `null` if one has not been generated yet.
-          example: https://dm.savee.com/board-og/original/Lp9wQ2s.jpg
-        ownership_type:
-          type: string
-          enum:
-          - team
-          - user
-          description: '`user` if the board belongs to a person (the caller, or someone who''s added the caller as a collaborator); `team` if it belongs to a Savee Teams workspace the caller is a member of.'
-          example: user
-        sub_boards:
-          type: array
-          items:
-            $ref: '#/components/schemas/SubBoard'
-          description: Child boards nested one level under this board, ordered by the same boards-sort preference as the top level.
+          description: Pass as `cursor` to fetch the next page. `null` on the last page.
+          example: eyJjIjoiMjAyNi0wNS0wOFQxMjowMDowMFoiLCJpIjoiNjdhYWRhMjAifQ
+        has_more:
+          type: boolean
+          description: Whether another page is available. Keep paging while this is `true`.
+          example: true
       required:
-      - id
-      - short_id
-      - name
-      - slug
-      - url
-      - is_private
-      - saves_count
-      - created_at
-      - og_image
-      - ownership_type
-      - sub_boards
-    Save:
+      - data
+      - next_cursor
+      - has_more
+    SaveColor:
       type: object
       properties:
-        id:
+        color:
           type: string
-          description: Save identifier. Stable across renames; safe to store as a foreign key on the caller’s side.
-          example: 67aada20d242ec0009400825
-        short_id:
-          type: string
-          description: The save’s short identifier — the segment in its savee.com URL (`savee.com/i/{short_id}/`). Also stable across renames. Accepted anywhere `saveID` is, so a savee.com link can be turned into an API call without a lookup step.
-          example: UXb_bvc
-        url:
-          type: string
-          format: uri
-          description: Canonical page on savee.com for this save.
-          example: https://savee.com/i/UXb_bvc/
-        name:
-          type: string
-          example: Brutalist poster
-        source_url:
-          type:
-          - string
-          - 'null'
-          description: Where the save was originally taken from. `null` if unknown.
-          example: https://example.com/poster
-        created_at:
-          type: string
-          format: date-time
-          example: '2026-05-08T12:00:00.000Z'
-        is_private:
-          type: boolean
-          description: Whether the save itself is marked private. This is a property of the save, independent of whether it also sits in a private board.
-          example: false
-        total_saves:
-          type: integer
+          pattern: ^#[0-9A-F]{6}$
+          description: Hex color code, e.g. `#1A2B3C`.
+          example: '#1A1A1A'
+        amount:
+          type: number
           minimum: 0
-          description: How many users across Savee have saved this same asset.
-          example: 42
-        media:
-          $ref: '#/components/schemas/SaveMedia'
-        colors:
-          type: array
-          items:
-            $ref: '#/components/schemas/SaveColor'
-          description: Dominant colors of the media, most prominent first. Empty when colors have not been extracted for this save (e.g. shortly after saving).
-        user:
-          $ref: '#/components/schemas/User'
+          maximum: 1
+          description: Fraction of the media covered by this color (0–1).
+          example: 0.62
       required:
-      - id
-      - short_id
-      - url
-      - name
-      - source_url
-      - created_at
-      - is_private
-      - total_saves
-      - media
-      - colors
+      - color
+      - amount
   securitySchemes:
     BearerAuth:
       type: http
