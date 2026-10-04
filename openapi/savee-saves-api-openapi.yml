@@ -324,39 +324,6 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    SaveMedia:
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - image
-          - video
-          example: image
-        width:
-          type: integer
-          minimum: 0
-          example: 1600
-        height:
-          type: integer
-          minimum: 0
-          example: 2400
-        thumbnail:
-          type: string
-          format: uri
-          description: 'Grid-sized preview (~420px wide). AVIF by default; clients that cannot decode AVIF should send `Avif-Fallback: 1` to receive JPG. Applies to both image and video assets (videos return a JPG/AVIF poster frame).'
-          example: https://dm.savee.com/asset_image/w420/6r4nDqE.avif
-        original:
-          type: string
-          format: uri
-          description: 'Full-quality asset. Image: AVIF by default (JPG with `Avif-Fallback: 1`). Video: MP4.'
-          example: https://dm.savee.com/asset_image/original/6r4nDqE.avif
-      required:
-      - type
-      - width
-      - height
-      - thumbnail
-      - original
     SaveColor:
       type: object
       properties:
@@ -374,78 +341,6 @@ components:
       required:
       - color
       - amount
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            code:
-              type: string
-            message:
-              type: string
-          required:
-          - code
-          - message
-      required:
-      - error
-    User:
-      type: object
-      properties:
-        id:
-          type: string
-          description: User identifier. Stable across renames; safe to store as a foreign key on the caller’s side.
-          example: 63e1a4c2d242ec00094007f1
-        username:
-          type: string
-          description: Current username. May change if the user renames.
-          example: aliceb
-        name:
-          type: string
-          example: Alice Bauer
-        url:
-          type: string
-          format: uri
-          example: https://savee.com/aliceb/
-        avatar_url:
-          type: string
-          format: uri
-          example: https://dm.savee.com/user-avatar/original/8kQ2mZp.jpg
-      required:
-      - id
-      - username
-      - name
-      - url
-      - avatar_url
-      description: The user who created this save. Omitted on /v1/saves (the caller is implicitly the author); present on /v1/feed and /v1/boards/{id}/saves where the author may differ from the caller.
-    SaveResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/Save'
-      required:
-      - data
-    SavesPage:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Save'
-        next_cursor:
-          type:
-          - string
-          - 'null'
-          description: Pass as `cursor` to fetch the next page. `null` on the last page.
-          example: eyJjIjoiMjAyNi0wNS0wOFQxMjowMDowMFoiLCJpIjoiNjdhYWRhMjAifQ
-        has_more:
-          type: boolean
-          description: Whether another page is available. Keep paging while this is `true`.
-          example: true
-      required:
-      - data
-      - next_cursor
-      - has_more
     Save:
       type: object
       properties:
@@ -504,6 +399,111 @@ components:
       - total_saves
       - media
       - colors
+    SavesPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Save'
+        next_cursor:
+          type:
+          - string
+          - 'null'
+          description: Pass as `cursor` to fetch the next page. `null` on the last page.
+          example: eyJjIjoiMjAyNi0wNS0wOFQxMjowMDowMFoiLCJpIjoiNjdhYWRhMjAifQ
+        has_more:
+          type: boolean
+          description: Whether another page is available. Keep paging while this is `true`.
+          example: true
+      required:
+      - data
+      - next_cursor
+      - has_more
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+          required:
+          - code
+          - message
+      required:
+      - error
+    SaveMedia:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - image
+          - video
+          example: image
+        width:
+          type: integer
+          minimum: 0
+          example: 1600
+        height:
+          type: integer
+          minimum: 0
+          example: 2400
+        thumbnail:
+          type: string
+          format: uri
+          description: 'Grid-sized preview (~420px wide). AVIF by default; clients that cannot decode AVIF should send `Avif-Fallback: 1` to receive JPG. Applies to both image and video assets (videos return a JPG/AVIF poster frame).'
+          example: https://dm.savee.com/asset_image/w420/6r4nDqE.avif
+        original:
+          type: string
+          format: uri
+          description: 'Full-quality asset. Image: AVIF by default (JPG with `Avif-Fallback: 1`). Video: MP4.'
+          example: https://dm.savee.com/asset_image/original/6r4nDqE.avif
+      required:
+      - type
+      - width
+      - height
+      - thumbnail
+      - original
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: User identifier. Stable across renames; safe to store as a foreign key on the caller’s side.
+          example: 63e1a4c2d242ec00094007f1
+        username:
+          type: string
+          description: Current username. May change if the user renames.
+          example: aliceb
+        name:
+          type: string
+          example: Alice Bauer
+        url:
+          type: string
+          format: uri
+          example: https://savee.com/aliceb/
+        avatar_url:
+          type: string
+          format: uri
+          example: https://dm.savee.com/user-avatar/original/8kQ2mZp.jpg
+      required:
+      - id
+      - username
+      - name
+      - url
+      - avatar_url
+      description: The user who created this save. Omitted on /v1/saves (the caller is implicitly the author); present on /v1/feed and /v1/boards/{id}/saves where the author may differ from the caller.
+    SaveResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Save'
+      required:
+      - data
   securitySchemes:
     BearerAuth:
       type: http
