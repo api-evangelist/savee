@@ -21,7 +21,7 @@ deliveryModel:
   generated: '2026-09-03'
   method: searched
 created: '2026-08-26'
-modified: '2026-09-03'
+modified: '2026-10-06'
 specificationVersion: '0.23'
 tags:
 - Design
@@ -120,6 +120,8 @@ apis:
   - type: Overlay
     url: overlays/savee-user-api-overlay.yaml
 common:
+- url: https://inspire.savee.com/rss/
+  type: BlogRSS
 - type: VulnerabilityDisclosure
   url: security/savee-vulnerability-disclosure.yml
 - type: DomainSecurity
