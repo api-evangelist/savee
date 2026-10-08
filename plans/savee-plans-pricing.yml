@@ -73,3 +73,36 @@ api_quota_note: >-
   API quotas are not tiered by plan — every active subscription gets the same published limits
   (see rate-limits/savee-rate-limits.yml); higher limits are by arrangement via hey@savee.com.
   OAuth app registration is invite-only regardless of plan.
+x-canonical:
+  generated: '2026-10-08'
+  vocabulary: all/0-working/economics/plans-canonical.yml
+  models:
+  - free
+  - seat
+  - subscription
+  units: []
+  plans:
+  - name: Free
+    access: other
+    model: free
+    model_how: derived
+    units: []
+    periods: []
+  - name: Pro
+    access: other
+    model: subscription
+    model_how: derived
+    units: []
+    periods: []
+  - name: Pro & Portfolio
+    access: other
+    model: subscription
+    model_how: derived
+    units: []
+    periods: []
+  - name: Teams
+    access: other
+    model: seat
+    model_how: derived
+    units: []
+    periods: []
