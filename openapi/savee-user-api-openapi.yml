@@ -72,6 +72,21 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+          required:
+          - code
+          - message
+      required:
+      - error
     Me:
       type: object
       properties:
@@ -117,21 +132,6 @@ components:
       - url
       - avatar_url
       - plan
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            code:
-              type: string
-            message:
-              type: string
-          required:
-          - code
-          - message
-      required:
-      - error
   securitySchemes:
     BearerAuth:
       type: http
